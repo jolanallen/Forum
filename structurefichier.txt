@@ -188,5 +188,3 @@ Fonctions utilitaires réutilisables:
 - **Forum-planner** : Probablement un script ou un binaire pour la planification des tâches
 - **go.mod** et **go.sum** : Gestion des dépendances Go
 - **README.md** : Documentation du projet
-
-Ce forum semble être une application complète avec des fonctionnalités d'administration, de gestion des utilisateurs et de publication de contenu. L'architecture est bien structurée et suit une approche modulaire.
