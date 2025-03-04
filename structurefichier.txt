@@ -1,192 +1,92 @@
-oui details moi tout cela le roles de chaque fichier et les focntiosn quil contiendras
-
 FORUM/
-├── .vscode/
-│   └── extensions.json
-├── backend/
-│   ├── db/
-│   │   ├── db.go           # Connexion à la BDD
-│   │   ├── migrations.go   # Migrations pour la structure de la BDD
-│   │   └── queries.go      # Requêtes SQL réutilisables
-│   ├── handler/            # Gestionnaires de requêtes HTTP
-│   │   ├── admin.go        # Routes admin
-│   │   ├── authentication.go # Auth (login/register)
-│   │   ├── comment.go      # Gestion des commentaires
-│   │   ├── post.go         # Gestion des posts
-│   │   ├── user.go         # Gestion des utilisateurs
-│   │   └── middleware.go   # Middlewares (auth, logging)
-│   ├── server/
-│   │   └── server.go       # Configuration du serveur
-│   └── struct/             # Structures de données
-│       ├── admin.go
-│       ├── comment.go
-│       ├── guest.go
-│       ├── post.go
-│       └── user.go
-├── database/
-│   └── forum.db            # Base de données SQLite
-├── main/
-│   └── main.go             # Point d'entrée
-├── web/                    # Front-end
-│   ├── static/             # Ressources statiques
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
-│   ├── templates/          # Templates HTML
-│       ├── admin/
-│       ├── auth/
-│       ├── forum/
-│       ├── partials/
-│       └── user/
-│              # Dossier pour les uploads (avatars, images)
-├── config/
-│   └── config.go           # Configuration de l'application
-├── utils/                  # Fonctions utilitaires
-│   ├── logger.go
-│   ├── validator.go
-│   └── helpers.go
-├── .gitignore
-├── Forum-planner
-├── go.mod
-├── go.sum
-└── README.md
-
-
-
-
-
-
-
-Je vais vous expliquer en détail le rôle de chaque fichier et les fonctions qu'il contiendra dans cette structure de projet de forum.
-
-## Structure générale
-Ce projet semble être un forum web développé en Go (backend) avec une interface utilisateur HTML/CSS/JS. Il utilise SQLite comme base de données.
-
-## Détails par dossier
-
-### .vscode/
-- **extensions.json** : Recommandations d'extensions VSCode pour le développement du projet.
-
-### backend/
-Ce dossier contient tout le code côté serveur.
-
-#### backend/db/
-- **db.go** : Fonctions pour établir et gérer la connexion à la base de données SQLite. Il contiendra probablement:
-  - Fonction d'initialisation de la connexion
-  - Gestion du pool de connexions
-  - Fonctions de fermeture sécurisée
-
-- **migrations.go** : Gestion des migrations de la base de données pour faire évoluer le schéma. Contiendra:
-  - Scripts de création des tables
-  - Fonctions pour appliquer/révoquer des migrations
-  - Gestion des versions du schéma
-
-- **queries.go** : Requêtes SQL préparées et réutilisables. Contiendra:
-  - Fonctions d'accès aux données communes
-  - Requêtes préparées pour optimiser les performances
-  - Helpers pour construire des requêtes dynamiques
-
-#### backend/handler/
-Gestionnaires de routes HTTP pour l'API du forum.
-
-- **admin.go** : Routes pour l'administration du forum:
-  - Gestion des catégories
-  - Modération des posts/utilisateurs
-  - Paramètres globaux du forum
-
-- **authentication.go** : Gestion de l'authentification:
-  - Inscription d'utilisateurs
-  - Connexion/déconnexion
-  - Récupération de mot de passe
-  - Jetons d'authentification (JWT probablement)
-
-- **comment.go** : Gestion des commentaires:
-  - Création/lecture/mise à jour/suppression des commentaires
-  - Modération des commentaires
-  - Pagination et filtrage
-
-- **post.go** : Gestion des publications:
-  - CRUD pour les posts
-  - Catégorisation
-  - Recherche et filtrage
-  - Gestion des votes/likes
-
-- **user.go** : Gestion des profils utilisateurs:
-  - Affichage/modification de profil
-  - Gestion des permissions
-  - Historique d'activité
-
-- **middleware.go** : Middlewares pour le traitement des requêtes:
-  - Authentification (vérification de session)
-  - Logging des requêtes
-  - Contrôle d'accès et permissions
-  - Gestion des erreurs
-
-#### backend/server/
-- **server.go** : Configuration et démarrage du serveur HTTP:
-  - Configuration du routeur
-  - Gestion des en-têtes CORS
-  - Paramètres du serveur (timeouts, taille max des requêtes)
-  - Démarrage/arrêt gracieux du serveur
-
-#### backend/struct/
-Définit les structures de données Go qui reflètent les entités du forum.
-
-- **admin.go** : Structure pour l'administration et permissions étendues
-- **comment.go** : Structure des commentaires (contenu, auteur, horodatage)
-- **guest.go** : Structure pour les visiteurs non-authentifiés
-- **post.go** : Structure des publications (titre, contenu, catégorie, etc.)
-- **user.go** : Structure des utilisateurs (nom, email, mot de passe hashé, etc.)
-
-### database/
-- **forum.db** : Fichier SQLite contenant toutes les données du forum.
-
-### main/
-- **main.go** : Point d'entrée de l'application:
-  - Initialisation de la base de données
-  - Configuration de l'application
-  - Démarrage du serveur
-
-### web/
-Ce dossier contient tous les éléments du frontend.
-
-#### web/static/
-Ressources statiques servies directement par le serveur:
-- **css/** : Feuilles de style pour l'interface utilisateur
-- **js/** : Scripts JavaScript pour l'interactivité
-- **images/** : Images utilisées dans l'interface (logos, icônes, etc.)
-
-#### web/templates/
-Templates HTML pour générer les pages:
-- **admin/** : Pages d'administration
-- **auth/** : Pages d'inscription/connexion
-- **forum/** : Pages principales du forum (listes, discussions)
-- **partials/** : Composants HTML réutilisables (en-tête, pied de page, barre latérale)
-- **user/** : Pages de profil utilisateur
-
-#### web/uploads/
-Dossier pour stocker les fichiers uploadés par les utilisateurs:
-- Images de profil
-- Images incluses dans les posts
-- Pièces jointes
-
-### config/
-- **config.go** : Configuration globale de l'application:
-  - Paramètres d'environnement (dev/prod)
-  - Configuration des logs
-  - Paramètres de sécurité
-  - Limites (taille des uploads, nombre de posts par page, etc.)
-
-### utils/
-Fonctions utilitaires réutilisables:
-- **logger.go** : Système de journalisation des événements
-- **validator.go** : Validation des données (formulaires, entrées utilisateur)
-- **helpers.go** : Fonctions génériques (formatage de date, génération d'ID, etc.)
-
-### Fichiers à la racine
-- **.gitignore** : Liste des fichiers à ignorer pour Git
-- **Forum-planner** : Probablement un script ou un binaire pour la planification des tâches
-- **go.mod** et **go.sum** : Gestion des dépendances Go
-- **README.md** : Documentation du projet
-
-Ce forum semble être une application complète avec des fonctionnalités d'administration, de gestion des utilisateurs et de publication de contenu. L'architecture est bien structurée et suit une approche modulaire.
+├── .vscode/                         # Configuration de VSCode
+│   └── extensions.json              # Recommandations d'extensions VSCode
+│
+├── backend/                         # Code backend en Go
+│   ├── db/                          # Gestion de la base de données SQLite
+│   │   ├── db.go                   # Connexion à la BDD
+│   │   └── queries.go              # Requêtes SQL réutilisables
+│   │
+│   ├── handler/                    # Gestionnaires de requêtes HTTP
+│   │   ├── admin.go                # Routes pour l'administration
+│   │   ├── authentication.go       # Routes d'authentification
+│   │   ├── comment.go              # Routes pour les commentaires
+│   │   ├── post.go                 # Routes pour les posts
+│   │   ├── user.go                 # Routes pour les utilisateurs
+│   │
+│   ├── server/                     # Configuration du serveur HTTP
+│   │   └── server.go               # Démarrage et configuration du serveur
+│   │
+│   └── struct/                     # Structures de données Go
+│       ├── admin.go                # Structure pour l'admin
+│       ├── comment.go              # Structure des commentaires
+│       ├── guest.go                # Structure pour les invités
+│       ├── post.go                 # Structure des posts
+│       └── user.go                 # Structure des utilisateurs
+│
+├── database/                        # Base de données SQLite
+│   └── forum.db                    # Fichier SQLite contenant la base de données
+│
+├── main/                            # Point d'entrée de l'application
+│   └── main.go                     # Initialisation de la base de données et du serveur
+│
+├── web/                             # Contenu frontend du forum
+│   ├── static/                      # Ressources statiques
+│   │   ├── css/                    # Feuilles de style
+│   │   ├── js/                     # Scripts JavaScript
+│   │   └── images/                 # Images (logos, icônes, etc.)
+│   │
+│   ├── templates/                  # Templates HTML
+│   │   ├── admin/                  # Pages d'administration
+│   │   │   ├── dashboard.html      # Vue des statistiques du forum
+│   │   │   ├── manage_users.html   # Gestion des utilisateurs
+│   │   │   └── manage_posts.html   # Gestion des posts
+│   │   │
+│   │   ├── auth/                   # Pages d'authentification
+│   │   │   ├── login.html          # Formulaire de connexion
+│   │   │   ├── register.html       # Formulaire d'inscription
+│   │   │   └── logout.html         # Déconnexion
+│   │   │
+│   │   ├── forum/                  # Pages principales du forum
+│   │   │   ├── home.html           # Liste des posts récents
+│   │   │   ├── sujet.html          # Détails d'un post
+│   │   │   ├── new_post.html       # Création de post
+│   │   │   ├── waiting_room.html   # page de redirection en cas de surcharge du serveur 
+│   │   │   └── user_posts.html     # Posts d'un utilisateur
+│   │   │
+│   │   ├── include/               # Fragments réutilisables
+│   │   │   ├── header.html         # En-tête
+│   │   │   ├── footer.html         # Pied de page
+│   │   │   ├── navbar.html         # Barre de navigation
+│   │   │   ├── sidebar.html        # Menu latéral
+│   │   │   ├── post_card.html      # Affichage d'un post sous forme de carte
+│   │   │   └── comment_card.html# Section des commentaires
+│   │   │ 
+│   │   │ 
+│   │   ├── user/                   # Pages de profil utilisateur
+│   │   │   ├── profile.html        # Profil utilisateur
+│   │   │   ├── edit_profile.html   # Édition du profil
+│   │   │   ├── settings.html       # Paramètres du compte
+│   │   │   └── notifications.html  # Notifications utilisateur
+│   │   │
+│   │   ├── error/                  # Pages d'erreurs
+│   │   │   ├── 403.html            # Accès refusé
+│   │   │   ├── 404.html            # Page non trouvée
+│   │   │   └── 500.html            # Erreur serveur
+│   │   │
+│   │   └── base.html               # Template principal avec header et footer
+│   │
+│   └── uploads/                    # Dossier pour les fichiers téléchargés
+│       ├── profile_pictures/       # Images de profil
+│       └── post_images/            # Images de posts
+│
+├── utils/                          # Fonctions utilitaires
+│   ├── password.go                 # Gestion du mot de passe (hashing, validation)
+│   └──  errors.go                  # Gestion des erreurs spécifiques
+│
+│
+├── .gitignore                      # Fichiers à ignorer pour Git
+├── Forum-planner                   # Outil ou planificateur de tâches
+├── go.mod                          # Gestion des dépendances Go
+├── go.sum                          # Vérification de l'intégrité des dépendances Go
+└── README.md                       # Documentation du projet

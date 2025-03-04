@@ -1,0 +1,33 @@
+{{define "content"}}
+<div class="forum-container">
+    <div class="forum-header">
+        <h1>Derniers Posts</h1>
+        <a href="/new-post" class="btn btn-primary">Créer un nouveau post</a>
+    </div>
+
+    <div class="posts-list">
+        {{range .Posts}}
+        <div class="post-card">
+            <div class="post-header">
+                <h3>{{.Title}}</h3>
+                <span class="post-author">Par {{.Author}}</span>
+            </div>
+            <div class="post-preview">
+                {{.Preview}}
+            </div>
+            <div class="post-footer">
+                <span>{{.CreatedAt}}</span>
+                <div class="post-actions">
+                    <a href="/post/{{.ID}}" class="btn btn-secondary">Lire plus</a>
+                    <span>💬 {{.CommentCount}}</span>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <div class="pagination">
+        {{template "include/pagination.html" .}}
+    </div>
+</div>
+{{end}}
