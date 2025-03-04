@@ -1,0 +1,36 @@
+<div class="post-card">
+    <div class="post-card-header">
+        <h3 class="post-card-title">{{.Title}}</h3>
+        <div class="post-card-meta">
+            <span class="post-card-author">Par {{.Author}}</span>
+            <span class="post-card-date">{{.CreatedAt}}</span>
+            <span class="post-card-category">{{.Category}}</span>
+        </div>
+    </div>
+
+    <div class="post-card-content">
+        {{if .Thumbnail}}
+        <div class="post-card-thumbnail">
+            <img src="{{.Thumbnail}}" alt="Miniature du post">
+        </div>
+        {{end}}
+
+        <p class="post-card-preview">
+            {{.Preview}}
+        </p>
+    </div>
+
+    <div class="post-card-footer">
+        <div class="post-card-stats">
+            <span class="post-card-comments">💬 {{.CommentCount}}</span>
+            <span class="post-card-likes">👍 {{.LikeCount}}</span>
+        </div>
+
+        <div class="post-card-actions">
+            <a href="/post/{{.ID}}" class="btn btn-secondary">Lire plus</a>
+            {{if $.User.IsAuthenticated}}
+            <button class="btn-like" data-post-id="{{.ID}}">J'aime</button>
+            {{end}}
+        </div>
+    </div>
+</div>
