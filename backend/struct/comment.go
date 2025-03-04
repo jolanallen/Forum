@@ -1,1 +1,7 @@
-package forum
+package structs
+
+
+
+type Comment struct {
+
+}

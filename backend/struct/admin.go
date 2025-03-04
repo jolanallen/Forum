@@ -1,1 +1,1 @@
-package forum
+package structs
