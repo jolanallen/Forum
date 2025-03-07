@@ -1,9 +1,9 @@
 package main
 
-import "Forum/backend/server"
-
+import (
+	"Forum/backend/server" // Importer le package server
+)
 
 func main() {
-	server.Server()
-
+	server.Server() // Démarrer le serveur HTTPS
 }

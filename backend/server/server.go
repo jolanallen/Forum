@@ -1,19 +1,26 @@
 package server
 
-
 import (
-	"net/http"
+	"fmt"
 	"log"
-
+	"net/http"
+	
 )
-// chemin accés au certificat ssl tls et a ca clef
-var  Certfile string = "/ssl_tls/cert.cert"
-var keyfile string = "/ssl_tls/default.key"
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Bienvenue sur mon serveur HTTPS !"))
+}
 
 func Server() {
-	err := http.ListenAndServeTLS(":8080", keyfile, Certfile, nil) // serveur web sur le port 8080 avec un certificat ssl tls et sa clef 
-	if err != nil {
-			log.Fatal(err)
-	}
+	
+	certFile := "backend/server/cert.pem"
+	keyFile := "backend/server/key.pem"
 
+	http.HandleFunc("/", handler)
+
+	fmt.Println("https://localhost:443")
+	err := http.ListenAndServeTLS(":443", certFile, keyFile, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
