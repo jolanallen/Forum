@@ -1,188 +1,82 @@
 FORUM/
 ├── .vscode/
 │   └── extensions.json
+│ 
 ├── backend/
+│   ├── logic/                # Logic pour le serveur
+│   │   ├── auth.go           # logique d'Authentification
+│   │   ├── cookie.go         # Gestion des cookies
+│   │   └── security.go       # rate limiting,
+│   │
 │   ├── db/
-│   │   ├── db.go           # Connexion à la BDD
-│   │   ├── migrations.go   # Migrations pour la structure de la BDD
-│   │   └── queries.go      # Requêtes SQL réutilisables
-│   ├── handler/            # Gestionnaires de requêtes HTTP
-│   │   ├── admin.go        # Routes admin
-│   │   ├── authentication.go # Auth (login/register)
-│   │   ├── comment.go      # Gestion des commentaires
-│   │   ├── post.go         # Gestion des posts
-│   │   ├── user.go         # Gestion des utilisateurs
-│   │   └── middleware.go   # Middlewares (auth, logging)
+│   │   ├── db.go             # Connexion à la BDD
+│   │   └── queries.go        # Requêtes SQL réutilisables
+│   │
+│   ├── handler/             # gestion des requetes http
+│   │   ├── admin.go         
+│   │   ├── authentication.go   
+│   │   ├── comment.go       
+│   │   ├── post.go          
+│   │   ├── user.go          
+│   │   └── guest.go         
+│   │
 │   ├── server/
-│   │   └── server.go       # Configuration du serveur
-│   └── struct/             # Structures de données
-│       ├── admin.go
+│   │   ├── ssl_tls/          
+│   │   │   ├── key.pem
+│   │   │   └── cert.pem
+│   │   │
+│   │   ├── router.go         # Configuration des routes
+│   │   └── server.go         # Configuration du serveur
+│   │
+│   ├── session/              # Gestion des sessions
+│   │   ├── session.go        # Implémentation des sessions
+│   │   └── store.go          # Stockage des sessions (mémoire/Redis/DB)
+│   │
+│   └── struct/               
+│       ├── admin.go           #structure de données
 │       ├── comment.go
 │       ├── guest.go
 │       ├── post.go
 │       └── user.go
+│
 ├── database/
-│   └── forum.db            # Base de données SQLite
+│   │
+│   └── forum.db              # Base de données SQLite
+│ 
 ├── main/
-│   └── main.go             # Point d'entrée
-├── web/                    # Front-end
-│   ├── static/             # Ressources statiques
+│   └── main.go               # Point d'entrée
+│ 
+├── web/                     
+│   ├── static/              
 │   │   ├── css/
 │   │   ├── js/
 │   │   └── images/
-│   ├── templates/          # Templates HTML
+│   │ 
+│   └── templates/           
 │       ├── admin/
 │       ├── auth/
-│       ├── forum/
-│       ├── partials/
-│       └── user/
-│              # Dossier pour les uploads (avatars, images)
-├── config/
-│   └── config.go           # Configuration de l'application
-├── utils/                  # Fonctions utilitaires
-│   ├── logger.go
-│   ├── validator.go
-│   └── helpers.go
+│       ├── errors/
+│       ├── forum/           
+│       ├── include/        
+│       ├── uploads/        
+│       ├── users/
+│       ├── guest/
+│       └── index.html
+│              
+├── utils/                  
+│   ├── validation.go        #  Validation des entrées 
+│   ├── email.go             #  Envoi d'emails double authentication
+│   └── password.go          # Gestion des mots de passe hachage et comparaison des mdp 
+│ 
+├── UnitTest/  
+│   ├── Unit_Test_DB_Queries.go               
+│   ├── Unit_Test_Auth.go
+│   └── Unit_Test_Logic.go  #Tests pour les logic
+│
+├── DOCKERFILE
+├── docker-compose.yaml     
+│  
 ├── .gitignore
-├── Forum-planner
 ├── go.mod
 ├── go.sum
 └── README.md
-
-
-
-
-
-
-
-Je vais vous expliquer en détail le rôle de chaque fichier et les fonctions qu'il contiendra dans cette structure de projet de forum.
-
-## Structure générale
-Ce projet semble être un forum web développé en Go (backend) avec une interface utilisateur HTML/CSS/JS. Il utilise SQLite comme base de données.
-
-## Détails par dossier
-
-### .vscode/
-- **extensions.json** : Recommandations d'extensions VSCode pour le développement du projet.
-
-### backend/
-Ce dossier contient tout le code côté serveur.
-
-#### backend/db/
-- **db.go** : Fonctions pour établir et gérer la connexion à la base de données SQLite. Il contiendra probablement:
-  - Fonction d'initialisation de la connexion
-  - Gestion du pool de connexions
-  - Fonctions de fermeture sécurisée
-
-- **migrations.go** : Gestion des migrations de la base de données pour faire évoluer le schéma. Contiendra:
-  - Scripts de création des tables
-  - Fonctions pour appliquer/révoquer des migrations
-  - Gestion des versions du schéma
-
-- **queries.go** : Requêtes SQL préparées et réutilisables. Contiendra:
-  - Fonctions d'accès aux données communes
-  - Requêtes préparées pour optimiser les performances
-  - Helpers pour construire des requêtes dynamiques
-
-#### backend/handler/
-Gestionnaires de routes HTTP pour l'API du forum.
-
-- **admin.go** : Routes pour l'administration du forum:
-  - Gestion des catégories
-  - Modération des posts/utilisateurs
-  - Paramètres globaux du forum
-
-- **authentication.go** : Gestion de l'authentification:
-  - Inscription d'utilisateurs
-  - Connexion/déconnexion
-  - Récupération de mot de passe
-  - Jetons d'authentification (JWT probablement)
-
-- **comment.go** : Gestion des commentaires:
-  - Création/lecture/mise à jour/suppression des commentaires
-  - Modération des commentaires
-  - Pagination et filtrage
-
-- **post.go** : Gestion des publications:
-  - CRUD pour les posts
-  - Catégorisation
-  - Recherche et filtrage
-  - Gestion des votes/likes
-
-- **user.go** : Gestion des profils utilisateurs:
-  - Affichage/modification de profil
-  - Gestion des permissions
-  - Historique d'activité
-
-- **middleware.go** : Middlewares pour le traitement des requêtes:
-  - Authentification (vérification de session)
-  - Logging des requêtes
-  - Contrôle d'accès et permissions
-  - Gestion des erreurs
-
-#### backend/server/
-- **server.go** : Configuration et démarrage du serveur HTTP:
-  - Configuration du routeur
-  - Gestion des en-têtes CORS
-  - Paramètres du serveur (timeouts, taille max des requêtes)
-  - Démarrage/arrêt gracieux du serveur
-
-#### backend/struct/
-Définit les structures de données Go qui reflètent les entités du forum.
-
-- **admin.go** : Structure pour l'administration et permissions étendues
-- **comment.go** : Structure des commentaires (contenu, auteur, horodatage)
-- **guest.go** : Structure pour les visiteurs non-authentifiés
-- **post.go** : Structure des publications (titre, contenu, catégorie, etc.)
-- **user.go** : Structure des utilisateurs (nom, email, mot de passe hashé, etc.)
-
-### database/
-- **forum.db** : Fichier SQLite contenant toutes les données du forum.
-
-### main/
-- **main.go** : Point d'entrée de l'application:
-  - Initialisation de la base de données
-  - Configuration de l'application
-  - Démarrage du serveur
-
-### web/
-Ce dossier contient tous les éléments du frontend.
-
-#### web/static/
-Ressources statiques servies directement par le serveur:
-- **css/** : Feuilles de style pour l'interface utilisateur
-- **js/** : Scripts JavaScript pour l'interactivité
-- **images/** : Images utilisées dans l'interface (logos, icônes, etc.)
-
-#### web/templates/
-Templates HTML pour générer les pages:
-- **admin/** : Pages d'administration
-- **auth/** : Pages d'inscription/connexion
-- **forum/** : Pages principales du forum (listes, discussions)
-- **partials/** : Composants HTML réutilisables (en-tête, pied de page, barre latérale)
-- **user/** : Pages de profil utilisateur
-
-#### web/uploads/
-Dossier pour stocker les fichiers uploadés par les utilisateurs:
-- Images de profil
-- Images incluses dans les posts
-- Pièces jointes
-
-### config/
-- **config.go** : Configuration globale de l'application:
-  - Paramètres d'environnement (dev/prod)
-  - Configuration des logs
-  - Paramètres de sécurité
-  - Limites (taille des uploads, nombre de posts par page, etc.)
-
-### utils/
-Fonctions utilitaires réutilisables:
-- **logger.go** : Système de journalisation des événements
-- **validator.go** : Validation des données (formulaires, entrées utilisateur)
-- **helpers.go** : Fonctions génériques (formatage de date, génération d'ID, etc.)
-
-### Fichiers à la racine
-- **.gitignore** : Liste des fichiers à ignorer pour Git
-- **Forum-planner** : Probablement un script ou un binaire pour la planification des tâches
-- **go.mod** et **go.sum** : Gestion des dépendances Go
-- **README.md** : Documentation du projet

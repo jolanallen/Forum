@@ -1,5 +1,5 @@
 package handler
 
-// # Gestionnaires HTTP
-// # Handlers authentificatiosn
+// # Gestionnaires des requetes HTTP
+
 

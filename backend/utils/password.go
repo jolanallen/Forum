@@ -2,14 +2,9 @@ package utils
 
 import (
 
-	//"golang.org/x/crypto"
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-func CheckPassword() {
-	
-}
 
 
 // Hasher un pass
