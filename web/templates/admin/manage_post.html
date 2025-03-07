@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="manage-posts-container">
+    <h1>Gestion des Posts</h1>
+
+    <div class="posts-filters">
+        <form action="/admin/posts" method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="category">Catégorie</label>
+                <select name="category" id="category">
+                    <option value="">Toutes</option>
+                    <option value="hack">Hack</option>
+                    <option value="prog">Programmation</option>
+                    <option value="news">News</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="status">Statut</label>
+                <select name="status" id="status">
+                    <option value="">Tous</option>
+                    <option value="active">Actif</option>
+                    <option value="reported">Signalé</option>
+                    <option value="hidden">Masqué</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="date-from">Depuis</label>
+                <input type="date" name="date_from" id="date-from">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </form>
+    </div>
+
+    <table class="posts-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Catégorie</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Posts}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Title}}</td>
+                <td>{{.Author}}</td>
+                <td>{{.Category}}</td>
+                <td>{{.CreatedAt}}</td>
+                <td>
+                    <span class="status {{.Status}}">{{.Status}}</span>
+                </td>
+                <td class="post-actions">
+                    <a href="/post/{{.ID}}" class="btn btn-view">Voir</a>
+                    <button class="btn btn-edit" data-post-id="{{.ID}}">Éditer</button>
+                    <button class="btn btn-delete" data-post-id="{{.ID}}">Supprimer</button>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {{template "include/pagination.html" .}}
+    </div>
+</div>
+{{end}}

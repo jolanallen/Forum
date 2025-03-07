@@ -1,5 +1,3 @@
-oui details moi tout cela le roles de chaque fichier et les focntiosn quil contiendras
-
 FORUM/
 ├── .vscode/
 │   └── extensions.json

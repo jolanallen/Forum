@@ -1,0 +1,66 @@
+{{define "content"}}
+<div class="post-detail-container">
+    <article class="post-full">
+        <header class="post-header">
+            <h1>{{.Post.Title}}</h1>
+            <div class="post-meta">
+                <span class="post-author">Par {{.Post.Author}}</span>
+                <span class="post-date">Publié le {{.Post.CreatedAt}}</span>
+                <span class="post-category">Catégorie: {{.Post.Category}}</span>
+            </div>
+        </header>
+
+        <div class="post-content">
+            {{.Post.Content}}
+            
+            {{if .Post.Image}}
+            <div class="post-image">
+                <img src="{{.Post.Image}}" alt="Image du post">
+            </div>
+            {{end}}
+        </div>
+
+        <div class="post-actions">
+            <button class="btn-like">👍 {{.Post.Likes}}</button>
+            <button class="btn-share">Partager</button>
+            {{if .User.IsAdmin}}
+            <button class="btn-edit">Éditer</button>
+            <button class="btn-delete">Supprimer</button>
+            {{end}}
+        </div>
+    </article>
+
+    <section class="comments-section">
+        <h2>Commentaires ({{.Post.CommentCount}})</h2>
+
+        {{if .User}}
+        <form class="comment-form" action="/post/{{.Post.ID}}/comment" method="POST">
+            <textarea name="comment" placeholder="Votre commentaire..." required></textarea>
+            <button type="submit">Publier</button>
+        </form>
+        {{else}}
+        <p>Connectez-vous pour commenter</p>
+        {{end}}
+
+        <div class="comments-list">
+            {{range .Post.Comments}}
+            <div class="comment">
+                <div class="comment-header">
+                    <span class="comment-author">{{.Author}}</span>
+                    <span class="comment-date">{{.CreatedAt}}</span>
+                </div>
+                <div class="comment-content">
+                    {{.Content}}
+                </div>
+                <div class="comment-actions">
+                    <button class="btn-like">👍 {{.Likes}}</button>
+                    {{if $.User.IsAdmin}}
+                    <button class="btn-delete">Supprimer</button>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </section>
+</div>
+{{end}}

@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="admin-dashboard">
+    <h1>Tableau de bord Administration</h1>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Utilisateurs</h3>
+            <div class="stat-numbers">
+                <span>Total: {{.Stats.TotalUsers}}</span>
+                <span>Nouveaux (24h): {{.Stats.NewUsers}}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Posts</h3>
+            <div class="stat-numbers">
+                <span>Total: {{.Stats.TotalPosts}}</span>
+                <span>Nouveaux (24h): {{.Stats.NewPosts}}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Commentaires</h3>
+            <div class="stat-numbers">
+                <span>Total: {{.Stats.TotalComments}}</span>
+                <span>Nouveaux (24h): {{.Stats.NewComments}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <div class="action-section">
+            <h2>Gestion Utilisateurs</h2>
+            <a href="/admin/users" class="btn btn-primary">Gérer les utilisateurs</a>
+            <a href="/admin/bans" class="btn btn-warning">Gestions des bannissements</a>
+        </div>
+
+        <div class="action-section">
+            <h2>Gestion Contenu</h2>
+            <a href="/admin/posts" class="btn btn-primary">Modérer les posts</a>
+            <a href="/admin/comments" class="btn btn-primary">Modérer les commentaires</a>
+        </div>
+
+        <div class="action-section">
+            <h2>Paramètres Forum</h2>
+            <a href="/admin/categories" class="btn btn-secondary">Catégories</a>
+            <a href="/admin/settings" class="btn btn-secondary">Paramètres généraux</a>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <h2>Activité récente</h2>
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Action</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .RecentActivities}}
+                <tr>
+                    <td>{{.User}}</td>
+                    <td>{{.Action}}</td>
+                    <td>{{.Date}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

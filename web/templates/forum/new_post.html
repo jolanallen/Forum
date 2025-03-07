@@ -1,0 +1,52 @@
+{{define "content"}}
+<div class="new-post-container">
+    <h1>Créer un nouveau post</h1>
+
+    <form action="/post/create" method="POST" enctype="multipart/form-data" class="new-post-form">
+        <div class="form-group">
+            <label for="title">Titre du post</label>
+            <input type="text" id="title" name="title" required maxlength="100">
+        </div>
+
+        <div class="form-group">
+            <label for="category">Catégorie</label>
+            <select id="category" name="category" required>
+                <option value="">Sélectionnez une catégorie</option>
+                <option value="hack">Hack</option>
+                <option value="prog">Programmation</option>
+                <option value="news">News</option>
+                <option value="general">Général</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tags">Tags (séparés par des virgules)</label>
+            <input type="text" id="tags" name="tags" placeholder="exemple: sécurité, réseau, linux">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Contenu du post</label>
+            <textarea id="content" name="content" rows="10" required 
+                      placeholder="Rédigez votre post ici..."
+                      maxlength="5000"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="image">Image à la une (optionnel)</label>
+            <input type="file" id="image" name="image" 
+                   accept="image/png, image/jpeg, image/gif">
+            <small>Taille maximale : 5 Mo. Formats acceptés : PNG, JPEG, GIF</small>
+        </div>
+
+        <div class="form-group checkbox">
+            <input type="checkbox" id="anonymous" name="anonymous">
+            <label for="anonymous">Poster anonymement</label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Publier le post</button>
+            <button type="reset" class="btn btn-secondary">Annuler</button>
+        </div>
+    </form>
+</div>
+{{end}}

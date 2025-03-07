@@ -1,0 +1,21 @@
+<!-- profile.html -->
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<div class="profile-container">
+    <h2>Profil de {{ user.username }}</h2>
+    <div class="profile-picture">
+        <img src="{{ user.profile_picture }}" alt="Photo de profil">
+    </div>
+    <p><strong>Email :</strong> {{ user.email }}</p>
+    <p><strong>Biographie :</strong> {{ user.bio }}</p>
+    <p><strong>Localisation :</strong> {{ user.location }}</p>
+    <p><strong>Site web :</strong> <a href="{{ user.website }}">{{ user.website }}</a></p>
+    <p><strong>Réseaux sociaux :</strong></p>
+    <ul>
+        {% if user.social_links.github %}<li><a href="{{ user.social_links.github }}">GitHub</a></li>{% endif %}
+        {% if user.social_links.twitter %}<li><a href="{{ user.social_links.twitter }}">Twitter</a></li>{% endif %}
+        {% if user.social_links.linkedin %}<li><a href="{{ user.social_links.linkedin }}">LinkedIn</a></li>{% endif %}
+    </ul>
+</div>
+{% endblock %}
