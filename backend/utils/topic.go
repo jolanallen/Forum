@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"Forum/structs"
+	"Forum/backend/structs"
 	"bytes"
 	"io"
 	"net/http"
