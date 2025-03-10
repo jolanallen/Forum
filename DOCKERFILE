@@ -5,4 +5,5 @@ ENV MYSQL_DATABASE=forum
 ENV MYSQL_USER=user
 ENV MYSQL_PASSWORD=password
 
-COPY relativepath/to/databases /docker-entrypoint-initdb.d/ 
+COPY databases/forum.sql /docker-entrypoint-initdb.d/
+
