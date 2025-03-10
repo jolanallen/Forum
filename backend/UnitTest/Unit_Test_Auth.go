@@ -14,3 +14,4 @@ func TestHashPassword() {
 	// Le mot de passe à tester
 
 }
+
