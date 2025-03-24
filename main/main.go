@@ -34,12 +34,14 @@ func main() {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-
+	fmt.Println("Connsbhhhsie!")
 	for rows.Next() {
 		var id int
 		var nom string
+		fmt.Println("Connssgfjhgihggie!")
 		if err := rows.Scan(&id, &nom); err != nil {
 			log.Fatal(err)
+			fmt.Println("Connssie!")
 		}
 		fmt.Printf("ID: %d, Nom: %s\n", id, nom)
 	}
