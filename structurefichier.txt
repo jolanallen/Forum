@@ -3,20 +3,18 @@ FORUM/
 │   └── extensions.json
 │ 
 ├── backend/
-│   ├── logic/                # Logic pour le serveur
-│   │   ├── auth.go           # logique d'Authentification
+│   ├── middlewares/                # middlewares pour le serveur
+│   │   ├── auth.go           # middlewares d'Authentification
 │   │   ├── cookie.go         # Gestion des cookies
-│   │   └── security.go       # rate limiting,
-│   │
+│   │   ├── Logger.go  # log des requetes 
+│   │   └── security.go       # middlewares rate limiting verifira que le nombre de connexion au serveur est a moins de 20 par seconde avant d'accepter lal connection 
 │   ├── db/
 │   │   ├── db.go             # Connexion à la BDD
 │   │   └── queries.go        # Requêtes SQL réutilisables
 │   │
 │   ├── handler/             # gestion des requetes http
 │   │   ├── admin.go         
-│   │   ├── authentication.go   
-│   │   ├── comment.go       
-│   │   ├── post.go          
+│   │   ├── authentication.go             
 │   │   ├── user.go          
 │   │   └── guest.go         
 │   │
