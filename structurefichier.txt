@@ -7,7 +7,7 @@ FORUM/
 │   │   ├── auth.go           # middlewares d'Authentification
 │   │   ├── cookie.go         # Gestion des cookies
 │   │   ├── Logger.go  # log des requetes 
-│   │   └── security.go       # middlewares rate limiting verifira que le nombre de connexion au serveur est a moins de 20 par seconde avant d'accepter lal connection 
+│   │   └── security.go       # middlewares rate limiting verifira que le nombre de connexion au serveur est a moins de 20 par seconde avant d'accepter la connection 
 │   ├── db/
 │   │   ├── db.go             # Connexion à la BDD
 │   │   └── queries.go        # Requêtes SQL réutilisables
