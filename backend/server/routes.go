@@ -60,4 +60,9 @@ func InitRoutes()  {
 	F.MainRouter = mainRouter                /////////ajout du routeru principal a la structure globlal Forum 
 
 
+
+
+	//Rate Limiting routes
+
+	http.Handle("/like", middlewares.RateLimit(http.HandlerFunc(handler.UserLikePost)))
 }
