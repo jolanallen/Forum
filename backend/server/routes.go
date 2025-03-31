@@ -3,14 +3,14 @@ package server
 import (
 	"Forum/backend/handler"
 	"Forum/backend/middlewares"
-	"Forum/backend/structs"
 	"net/http"
-	
+	"Forum/backend/utils"
 )
 
-var F =  &structs.Forum{}
 
 func InitRoutes()  {
+
+	
 //////////////////////////////sous router pour guest //////////////////////////////////////////
 	guestRouter := http.NewServeMux()
 	guestRouter.HandleFunc("/", handler.GuestHome)
@@ -52,13 +52,12 @@ func InitRoutes()  {
 ///////////////////////// routeur Principal ////////////////////////////////////////////////
 
 	mainRouter := http.NewServeMux()
-	mainRouter.HandleFunc("/overload", handler.OverloadHandler)
 	mainRouter.Handle("/forum/", http.StripPrefix("/forum", protectedGuestRouter))
 	mainRouter.Handle("/auth/", http.StripPrefix("/auth", protectedAuthRouter))
 	mainRouter.Handle("/user/", http.StripPrefix("/user", protectedUserRouter))
 	mainRouter.Handle("/admin/", http.StripPrefix("/admin", protectedAdminRouter))
 
-	F.MainRouter = mainRouter       /////////ajout du routeur principal a la structure globlal Forum 
+	utils.F.MainRouter = mainRouter       /////////ajout du routeur principal a la structure globlal Forum 
 
 
 }

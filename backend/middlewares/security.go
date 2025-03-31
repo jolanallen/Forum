@@ -1,12 +1,10 @@
 package middlewares
 
 import (
-	"Forum/backend/handler"
 	"log"
 	"net"
 	"net/http"
 	"sync"
-
 	"golang.org/x/time/rate"
 )
 
@@ -34,19 +32,18 @@ func RateLimit(next http.Handler) http.Handler {
 		var limiter *rate.Limiter
 
 		switch r.URL.Path {
-		case "/auth/login", "/auth/register":
-			limiter = getLimiter(ip, loginLimits, 3, 2) // 3 requêtes/sec, capacité de 2 requêtes du tampon (burst)
+		case "/auth/login", "/auth/register", "/login", "/register":   
+			limiter = getLimiter(ip, loginLimits, 5, 2) // 5 requêtes/sec, capacité de 2 requêtes du tampon 
 		default:
 			limiter = getLimiter(ip, globalLimits, 20, 5) // 20 requêtes/sec, tampon de 5
 		}
 
 		// Vérification du rate limit
 		if !limiter.Allow() {
-			log.Printf("[!!!!!! ALERT !!!!] Request blocked from IP: %s | URL: %s | Method: %s | UserAgent: %s \n", ip, r.URL.Path, r.Method, r.UserAgent())
-				handler.OverloadHandler(w, r)
-			return
+			log.Printf("[!!!!!! ALERT !!!!] Request blocked from IP: %s | URL: %s | Method: %s | UserAgent: %s",ip, r.URL.Path, r.Method, r.UserAgent())
+			http.Error(w, "Too many requests", http.StatusTooManyRequests)
 		}
 
-		next.ServeHTTP(w, r) 
+		next.ServeHTTP(w, r) // Passer au handler suivant
 	})
 }

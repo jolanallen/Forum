@@ -6,6 +6,8 @@ import (
 
 
 type Forum struct {
-	MainRouter *http.ServeMux
-
+	MainRouter  *http.ServeMux
 }
+
+
+
