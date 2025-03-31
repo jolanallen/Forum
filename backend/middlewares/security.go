@@ -47,6 +47,6 @@ func RateLimit(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r) // Passer au handler suivant
+		next.ServeHTTP(w, r) 
 	})
 }
