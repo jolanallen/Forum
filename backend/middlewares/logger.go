@@ -3,22 +3,16 @@ package middlewares
 import (
 	"net/http"
 	"log"
-	"time"
+	"strings"
 )
-
-///////////////////////////logic de création de log pour chaque requetes effectuer //////////////////////////////////////////
 
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		// Log the request details
-		log.Printf("Request: %s %s", r.Method, r.URL.Path)
-
-		// Call the next handler
+		ip := r.RemoteAddr
+		if strings.Contains(r.Header.Get("X-Forwarded-For"), ",") {
+			ip = strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]
+		}
+		log.Printf("[Acess] => IP: %s | Method: %s | URL: %s | User-Agent: %s", ip, r.Method, r.URL.Path, r.UserAgent())
 		next.ServeHTTP(w, r)
-
-		// Log the duration of the request
-		log.Printf("Duration: %v", time.Since(start))
 	})
 }

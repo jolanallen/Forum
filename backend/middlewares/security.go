@@ -1,57 +1,52 @@
 package middlewares
 
-
 import (
+	"Forum/backend/handler"
+	"log"
+	"net"
 	"net/http"
 	"sync"
-	"time"
-	"log"
+
+	"golang.org/x/time/rate"
 )
 
 var mu sync.Mutex
-var ipRequests = make(map[string][]time.Time)
+var loginLimits = make(map[string]*rate.Limiter) // Anti-brute-force pour /auth/login et /auth/register
+var globalLimits = make(map[string]*rate.Limiter) // limites global
 
-// Define rate limit parameters
-const maxRequests = 10            // Max requests per IP
-const timeWindow = 1 * time.Minute // Time window for rate limiting
+// Fonction pour récupérer un rate limiter ou en créer un
+func getLimiter(ip string, limitMap map[string]*rate.Limiter, rps rate.Limit, burst int) *rate.Limiter {
+	mu.Lock()
+	defer mu.Unlock()
 
-// RateLimit middleware to limit requests and redirect if exceeded
+	limiter, exists := limitMap[ip]
+	if !exists {
+		limiter = rate.NewLimiter(rps, burst)
+		limitMap[ip] = limiter
+	}
+	return limiter
+}
+
 func RateLimit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		defer mu.Unlock()
+		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-		ip := r.RemoteAddr // Get client IP address
-		now := time.Now()
+		var limiter *rate.Limiter
 
-		// Clean up old request timestamps
-		ipRequests[ip] = filterOldRequests(ipRequests[ip], now, timeWindow)
+		switch r.URL.Path {
+		case "/auth/login", "/auth/register":
+			limiter = getLimiter(ip, loginLimits, 3, 2) // 3 requêtes/sec, capacité de 2 requêtes du tampon (burst)
+		default:
+			limiter = getLimiter(ip, globalLimits, 20, 5) // 20 requêtes/sec, tampon de 5
+		}
 
-		// Check if rate limit exceeded
-		if len(ipRequests[ip]) >= maxRequests {
-			// Log the excess traffic and redirect the user to an overload page
-			log.Printf("Rate limit exceeded for IP: %s", ip)
-
-			// Redirect to a "Too Many Requests" or "Overload" page (or maintenance page)
-			http.Redirect(w, r, "/overload", http.StatusTooManyRequests)
+		// Vérification du rate limit
+		if !limiter.Allow() {
+			log.Printf("[!!!!!! ALERT !!!!] Request blocked from IP: %s | URL: %s | Method: %s | UserAgent: %s \n", ip, r.URL.Path, r.Method, r.UserAgent())
+				handler.OverloadHandler(w, r)
 			return
 		}
 
-		// Log the request time
-		ipRequests[ip] = append(ipRequests[ip], now)
-
-		// Pass the request to the next handler
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r) // Passer au handler suivant
 	})
-}
-
-// Helper function to filter out old requests that are outside the time window
-func filterOldRequests(timestamps []time.Time, now time.Time, window time.Duration) []time.Time {
-	var validTimestamps []time.Time
-	for _, timestamp := range timestamps {
-		if now.Sub(timestamp) <= window {
-			validTimestamps = append(validTimestamps, timestamp)
-		}
-	}
-	return validTimestamps
 }
