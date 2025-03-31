@@ -1,34 +1,32 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  app:
-    image: forum-app
-    container_name: forum-app
-    restart: always
-    depends_on:
-      - mysql
-    environment:
-      DB_HOST: mysql
-      DB_USER: user
-      DB_PASSWORD: password
-      DB_NAME: forum
-    ports:
-      - "443:8080"       ## car le server web golang se lance sur le port 443 donc on redirige su rle port 8080 en sortie de conteneur 
-
   mysql:
-    image: mysql:8.0
-    container_name: forum-mysql
+    image: forum-mysql
+    container_name: mysql-container
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: forum
       MYSQL_USER: user
       MYSQL_PASSWORD: password
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./databases/forum.sql:/docker-entrypoint-initdb.d/forum.sql
-    ports:
-      - "3306:3306"
+    networks:
+      - forum-network  # Réseau interne, non exposé à l'extérieur
 
-volumes:
-  mysql_data:
+  forum:
+    image: forum-app
+    container_name: forum-container
+    depends_on:
+      - mysql
+    networks:
+      - forum-network
+    ports:
+      - "443:443"  # Expose le port 443 de l'hôte vers le conteneur
+    environment:
+      CERT_PATH: /app/ssl_tls/cert.pem
+      KEY_PATH: /app/ssl_tls/key.pem
+    command: ["/app/forum-app"]
+
+networks:
+  forum-network:
+    driver: bridge
