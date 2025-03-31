@@ -8,7 +8,7 @@ import (
 	
 )
 
-var F *structs.Forum
+var F =  &structs.Forum{}
 
 func InitRoutes()  {
 //////////////////////////////sous router pour guest //////////////////////////////////////////
@@ -38,7 +38,7 @@ func InitRoutes()  {
 	userRouter.HandleFunc("/user/logout", handler.Logout)
 	userRouter.HandleFunc("/user/profile", handler.UserProfile)
 
-	protectedUserRouter := middlewares.Logger(middlewares.Authentication(userRouter))    //(protégées par le middlewares Authentication
+	protectedUserRouter := middlewares.Logger(middlewares.Authentication(middlewares.RateLimit(userRouter)))    //(protégées par le middlewares Authentication
 
 
 ///////////////////////// sous routeur mour Admin ////////////////////////////////////////////////
@@ -52,12 +52,13 @@ func InitRoutes()  {
 ///////////////////////// routeur Principal ////////////////////////////////////////////////
 
 	mainRouter := http.NewServeMux()
-	mainRouter.Handle("/guest/", http.StripPrefix("/guest", protectedGuestRouter))
+	mainRouter.HandleFunc("/overload", handler.OverloadHandler)
+	mainRouter.Handle("/forum/", http.StripPrefix("/forum", protectedGuestRouter))
 	mainRouter.Handle("/auth/", http.StripPrefix("/auth", protectedAuthRouter))
 	mainRouter.Handle("/user/", http.StripPrefix("/user", protectedUserRouter))
 	mainRouter.Handle("/admin/", http.StripPrefix("/admin", protectedAdminRouter))
 
-	F.MainRouter = mainRouter                /////////ajout du routeru principal a la structure globlal Forum 
+	F.MainRouter = mainRouter       /////////ajout du routeur principal a la structure globlal Forum 
 
 
 }
