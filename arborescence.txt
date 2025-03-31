@@ -1,0 +1,105 @@
+.
+├── arborescence.txt
+├── backend
+│   ├── db
+│   │   ├── db.go
+│   │   └── queries.go
+│   ├── handler
+│   │   ├── admin.go
+│   │   ├── authentification.go
+│   │   ├── guest.go
+│   │   └── user.go
+│   ├── middlewares
+│   │   ├── auth.go
+│   │   ├── cookie.go
+│   │   ├── logger.go
+│   │   └── security.go
+│   ├── server
+│   │   ├── routes.go
+│   │   ├── server.go
+│   │   └── ssl_tls
+│   │       ├── cert.pem
+│   │       └── key.pem
+│   ├── session
+│   │   ├── session.go
+│   │   └── session_store.go
+│   ├── structs
+│   │   ├── admin.go
+│   │   ├── comment.go
+│   │   ├── Forum.go
+│   │   ├── guest.go
+│   │   ├── image.go
+│   │   ├── post.go
+│   │   └── user.go
+│   ├── UnitTest
+│   │   ├── Unit_Test_Auth.go
+│   │   ├── Unit_Test_DB_Queries.go
+│   │   └── Unit_Test_Logic.go
+│   └── utils
+│       ├── email.go
+│       ├── Init.go
+│       ├── password.go
+│       ├── topic.go
+│       └── validations.go
+├── databases
+│   ├── Dockerfile
+│   └── forum.sql
+├── docker-compose.yaml
+├── Dockerfile
+├── forum-app
+├── forum image sql
+│   ├── Capture d'écran 2025-03-10 104158.png
+│   ├── Capture d'écran 2025-03-10 232426.png
+│   └── creation d'un user pour exporter.png
+├── go.mod
+├── go.sum
+├── launcher.sh
+├── main
+│   └── main.go
+├── README.md
+├── route management.jpg
+├── structurefichier.txt
+└── web
+    ├── static
+    │   ├── css
+    │   │   ├── index.css
+    │   │   ├── newPost.css
+    │   │   ├── profil.css
+    │   │   └── waitingRoom.css
+    │   ├── img
+    │   │   ├── logo.2023a.png
+    │   │   └── logo.jpg
+    │   └── js
+    │       ├── index.js
+    │       ├── post.js
+    │       └── waitingRoom.js
+    └── templates
+        ├── admin
+        │   ├── dashboard.html
+        │   ├── manage_post.html
+        │   └── manage_user.html
+        ├── auth
+        │   ├── login.html
+        │   ├── logout.html
+        │   └── register.html
+        ├── errors
+        │   ├── 403.html
+        │   ├── 404.html
+        │   └── 500.html
+        ├── forum
+        │   ├── home.html
+        │   ├── new_post.html
+        │   ├── sujet.html
+        │   └── waitingRoom.html
+        ├── include
+        │   ├── comment_card.html
+        │   ├── footer.html
+        │   ├── header.html
+        │   ├── navbar.html
+        │   └── post_card.html
+        ├── index.html
+        └── users
+            ├── profile.html
+            └── profile_settings.html
+
+26 directories, 77 files
