@@ -8,15 +8,13 @@ import (
 
 var DB *sql.DB
 
-func Init() {
+func DBconnect() {
 	var err error
 	// Remplacez cette ligne par votre chaîne de connexion MySQL
 	// Exemple : "root:password@tcp(127.0.0.1:3306)/forum"
-	DB, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/forum")
+	DB, err = sql.Open("mysql", "root:password@tcp(forum-mysql:3306)/forum")
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := DB.Ping(); err != nil {
-		log.Fatal(err)
-	}
+	
 }

@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/go-sql-driver/mysql v1.9.0
 	golang.org/x/crypto v0.36.0
+	golang.org/x/time v0.11.0
 	gorm.io/gorm v1.25.12
 )
 

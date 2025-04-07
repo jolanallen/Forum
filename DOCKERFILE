@@ -1,9 +1,0 @@
-FROM mysql:8.0
-
-ENV MYSQL_ROOT_PASSWORD=root
-ENV MYSQL_DATABASE=forum
-ENV MYSQL_USER=user
-ENV MYSQL_PASSWORD=password1234
-
-COPY databases/forum.sql /docker-entrypoint-initdb.d/
-
