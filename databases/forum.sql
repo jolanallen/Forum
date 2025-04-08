@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS `sessions` (
+DROP TABLE IF EXISTS `sessions`;
+
+CREATE TABLE `sessions` (
   `session_id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `user_id` BIGINT UNSIGNED NOT NULL,
   `session_token` VARCHAR(255) NOT NULL UNIQUE,
@@ -7,8 +9,14 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   FOREIGN KEY (`user_id`) REFERENCES `users` (`users_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `admins` (
-  `admin_id` INT NOT NULL AUTO_INCREMENT,
+LOCK TABLES `sessions` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `admins`;
+
+CREATE TABLE `admins` (
+  `admin_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `admin_username` VARCHAR(255) NOT NULL,
   `admin_password_hash` VARCHAR(255) NOT NULL,
   `admin_email` VARCHAR(255) NOT NULL,
@@ -21,7 +29,14 @@ CREATE TABLE IF NOT EXISTS `admins` (
   UNIQUE KEY `admin_key` (`admin_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `users` (
+LOCK TABLES `admins` WRITE;
+
+UNLOCK TABLES;
+
+
+DROP TABLE IF EXISTS `users`;
+
+CREATE TABLE `users` (
   `users_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,  -- Modification ici pour BIGINT UNSIGNED
   `users_username` VARCHAR(255) NOT NULL,
   `users_password_hash` VARCHAR(255) NOT NULL,
@@ -33,7 +48,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `users_password_hash` (`users_password_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `guests` (
+LOCK TABLES `users` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `guests`;
+
+CREATE TABLE `guests` (
   `guests_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `guests_cookie_id` INT DEFAULT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -41,7 +62,13 @@ CREATE TABLE IF NOT EXISTS `guests` (
   PRIMARY KEY (`guests_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `posts` (
+LOCK TABLES `guests` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `posts`;
+
+CREATE TABLE `posts` (
   `post_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `post_key` VARCHAR(255) NOT NULL,
   `post_image` BLOB,
@@ -55,7 +82,13 @@ CREATE TABLE IF NOT EXISTS `posts` (
   CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`users_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `comments` (
+LOCK TABLES `posts` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `comments`;
+
+CREATE TABLE `comments` (
   `comment_id` INT UNSIGNED PRIMARY KEY,
   `userID` INT UNSIGNED,
   `topicID` INT UNSIGNED,
@@ -70,13 +103,25 @@ CREATE TABLE IF NOT EXISTS `comments` (
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
 
-CREATE TABLE IF NOT EXISTS `categories` (
+LOCK TABLES `comments` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `categories`;
+
+CREATE TABLE `categories` (
   `categories_id` INT UNSIGNED PRIMARY KEY,
   `categories_name` VARCHAR(255),
   `categories_description` TEXT
 );
 
-CREATE TABLE IF NOT EXISTS `topics` (
+LOCK TABLES `categories` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `topics`;
+
+CREATE TABLE `topics` (
   `topics_id` INT UNSIGNED PRIMARY KEY,
   `topics_categoryID` INT UNSIGNED,
   `topics_userID` INT UNSIGNED,
@@ -89,7 +134,13 @@ CREATE TABLE IF NOT EXISTS `topics` (
   FOREIGN KEY (`topics_userID`) REFERENCES `users` (`users_id`)
 );
 
-CREATE TABLE IF NOT EXISTS `topicsLikes` (
+LOCK TABLES `topics` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `topicsLikes`;
+
+CREATE TABLE `topicsLikes`; (
   `topicsLikes_id` INT UNSIGNED PRIMARY KEY,
   `topicID` INT UNSIGNED,
   `userID` INT UNSIGNED,
@@ -97,7 +148,13 @@ CREATE TABLE IF NOT EXISTS `topicsLikes` (
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
 
-CREATE TABLE IF NOT EXISTS `topicsDislikes` (
+LOCK TABLES `topicsLikes` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `topicsDislikes`;
+
+CREATE TABLE `topicsDislikes`; (
   `topicsDislikes_id` INT UNSIGNED PRIMARY KEY,
   `topicID` INT UNSIGNED,
   `userID` INT UNSIGNED,
@@ -105,16 +162,26 @@ CREATE TABLE IF NOT EXISTS `topicsDislikes` (
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
 
-CREATE TABLE IF NOT EXISTS `images` (
+LOCK TABLES `topicsDislikes` WRITE;
+
+UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `images`;
+
+CREATE TABLE `images` (
     `images_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `url` VARCHAR(255),
     `filename` VARCHAR(255),
     `data` BLOB
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+LOCK TABLES `images` WRITE;
+
+UNLOCK TABLES;
+
 -- Insertion des données
-INSERT INTO `admins` (`admin_username`, `admin_password_hash`, `admin_email`, `admin_cookie_id`, `admin_key`) VALUES
-('adminMar', '123', 'marino@ynov.com', 1, 'yes');
+INSERT INTO `admins` (`admin_username`, `admin_password_hash`, `admin_email`, `admin_key`) VALUES
+('adminMar', '123', 'marino@ynov.com', 'yes');
 
 INSERT INTO `users` (`users_username`, `users_password_hash`, `users_cookies_id`) VALUES 
 ('userMar', '1234', 2);

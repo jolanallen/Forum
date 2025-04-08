@@ -1,7 +1,7 @@
 package structs
 
 type Category struct {
-	ID          uint      `gorm:"primaryKey"`
-	Name        string    `gorm:"size:255;not null"`
-	Description string    `gorm:"type:text"`
+	CategoriesID uint64 `gorm:"column:categories_id;primaryKey"`         // ID de la catégorie (type uint64 pour UNSIGNED)
+	Name         string `gorm:"column:categories_name"`                  // Nom de la catégorie
+	Description  string `gorm:"column:categories_description;type:text"` // Description de la catégorie
 }

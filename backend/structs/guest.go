@@ -5,8 +5,8 @@ import (
 )
 
 type Guest struct {
-	ID             uint      `gorm:"primaryKey"`
-	CookieID       *int      `gorm:"default:null"`
-	CreatedAt      time.Time `gorm:"autoCreateTime"`
-	LastVisitedAt  *time.Time
+	GuestID       uint       `gorm:"column:guests_id;primaryKey;autoIncrement"`
+	CookieID      *int       `gorm:"column:guests_cookie_id"`
+	CreatedAt     time.Time  `gorm:"column:created_at;autoCreateTime"`
+	LastVisitedAt *time.Time `gorm:"column:last_visited_at"`
 }

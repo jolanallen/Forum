@@ -25,7 +25,7 @@ func DBconnect() {
 	}
 
 	// Automigration pour créer ou mettre à jour les tables en fonction des structures
-	err = DB.AutoMigrate(&structs.Admin{}, &structs.User{}, &structs.Session{}, &structs.Post{}, &structs.Comment{}, &structs.Category{}, &structs.Guest{}, &structs.Image{}, &structs.Topic{}, &structs.TopicDislike{}, &structs.TopicLike{})
+	err = DB.AutoMigrate(&structs.Topic{}, &structs.TopicDislike{}, &structs.TopicLike{})
 	if err != nil {
 		fmt.Println("Error during migration:", err)
 		return

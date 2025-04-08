@@ -3,17 +3,15 @@ package structs
 import "time"
 
 type Topic struct {
-	ID            uint           `gorm:"primaryKey"`
-	CategoryID    uint           `gorm:"not null"`
-	UserID        uint           `gorm:"not null"`
-	Title         string         `gorm:"size:255;not null"`
-	Content       string         `gorm:"type:text"`
-	CreatedAt     time.Time      `gorm:"autoCreateTime"`
-	TopicsLike    int            `gorm:"default:0"`
-	TopicsDislike int            `gorm:"default:0"`
-	Category      Category       `gorm:"foreignKey:CategoryID;references:ID"`
-	User          User           `gorm:"foreignKey:UserID;references:ID"`
-	Comments      []Comment      `gorm:"foreignKey:TopicID;references:ID"`
-	TopicLikes    []TopicLike    `gorm:"foreignKey:TopicID;references:ID"`
-	TopicDislikes []TopicDislike `gorm:"foreignKey:TopicID;references:ID"`
+	TopicsID      uint64    `gorm:"column:topics_id;primaryKey"`      // ID du topic (type uint64 pour UNSIGNED)
+	CategoryID    uint64    `gorm:"column:topics_categoryID"`         // ID de la catégorie (type uint64 pour UNSIGNED)
+	UserID        uint64    `gorm:"column:topics_userID"`             // ID de l'utilisateur (type uint64 pour UNSIGNED)
+	Title         string    `gorm:"column:topics_title"`              // Titre du topic
+	Content       string    `gorm:"column:topics_content;type:text"`  // Contenu du topic
+	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime"` // Date de création
+	TopicsLike    int       `gorm:"column:topics_like"`               // Nombre de likes
+	TopicsDislike int       `gorm:"column:topics_dislike"`            // Nombre de dislikes
+
+	User     User     `gorm:"foreignKey:UserID;references:UsersID"`          // Relation avec User
+	Category Category `gorm:"foreignKey:CategoryID;references:CategoriesID"` // Relation avec Category
 }

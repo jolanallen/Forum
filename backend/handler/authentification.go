@@ -27,9 +27,9 @@ func CreateSession(userID uint) (string, error) {
 
 	// Créer une nouvelle session
 	session := structs.Session{
-		UserID:      userID,
+		UserID:       uint64(userID),
 		SessionToken: sessionToken,
-		ExpiresAt:   expiration,
+		ExpiresAt:    expiration,
 	}
 
 	// Insérer la session dans la base de données

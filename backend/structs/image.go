@@ -1,7 +1,8 @@
 package structs
 
 type Image struct {
-    URL      string `gorm:"size:255"`  // Stocke l'URL de l'image
-    Filename string `gorm:"size:255"`  // Nom du fichier
-    Data     []byte `gorm:"type:blob"` // Stocke l'image en binaire (SQLite/MySQL)
+	ImageID  uint   `gorm:"column:images_id;primaryKey;autoIncrement"` // Identifiant unique (clé primaire, auto-incrément)
+	URL      string `gorm:"column:url"`                                // URL de l'image
+	Filename string `gorm:"column:filename"`                           // Nom du fichier
+	Data     []byte `gorm:"column:data"`                               // Données de l'image (BLOB)
 }
