@@ -78,5 +78,9 @@ echo "🚀 Démarrage des conteneurs..."
 docker-compose up -d || { echo "❌ Échec du démarrage des conteneurs"; exit 1; }
 
 echo "✅ Projet lancé avec succès !"
+if [ -d "main" ]; then
+    cd main || { echo "❌ Impossible d'entrer dans le répertoire main"; exit 1; }
+fi
+go run .  # Ou une commande Go spécifique si nécessaire
 
-echo "https://localhost/forum/"
+echo "https://localhost:8080/forum/"

@@ -1,12 +1,24 @@
 package handler
 
 import (
+	"Forum/backend/db"
+	"Forum/backend/structs"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 func GuestHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Page d'accueil des invités")
+	fmt.Fprintln(w, "Page d'accueil des invités b")
+}
+
+func GuestGuest(w http.ResponseWriter, r *http.Request) {
+	var guests []structs.Guest
+	result := db.DB.Find(&guests) // Récupérer tous les guests
+	if result.Error != nil {
+		log.Fatal(result.Error)
+	}
+	fmt.Println(guests)
 }
 
 func GuestHack(w http.ResponseWriter, r *http.Request) {

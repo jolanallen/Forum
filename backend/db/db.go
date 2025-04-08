@@ -1,47 +1,35 @@
 package db
 
 import (
-    "database/sql"
-    "log"
-    "time"
+	"Forum/backend/structs"
+	"fmt"
 
-    _ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql" // Utilisation du driver MySQL de GORM v2
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
+// DBconnect initialise la connexion à la base de données MySQL
 func DBconnect() {
-    var err error
-    var retries int
+	var err error
 
-    // Connexion à MySQL (remplacer avec les bonnes informations)
-    dsn := "root:root@tcp(forum-mysql:3306)/forum?parseTime=true"
+	// DSN pour la connexion à MySQL (remplacer avec les bonnes informations)
+	dsn := "root:root@tcp(localhost:3306)/forum?parseTime=true"
 
-    // Attendre 20 secondes avant de commencer à tenter la connexion
-    log.Println("⏳ Attente de 20 secondes avant d'essayer de se connecter à la BDD...")
-    time.Sleep(20 * time.Second)
+	// Connexion à MySQL avec GORM
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Println("Error connecting to the database:", err)
+		return
+	}
 
-    // Tentatives de connexion avec un délai entre chaque essai
-    for retries = 0; retries < 10; retries++ {
-        DB, err = sql.Open("mysql", dsn)
-        if err != nil {
-            log.Printf("Erreur ouverture BDD, tentative %d : %v\n", retries+1, err)
-            time.Sleep(5 * time.Second) // Attendre 5 secondes avant de réessayer
-            continue
-        }
+	// Automigration pour créer ou mettre à jour les tables en fonction des structures
+	err = DB.AutoMigrate(&structs.Admin{}, &structs.User{}, &structs.Session{}, &structs.Post{}, &structs.Comment{}, &structs.Category{}, &structs.Guest{}, &structs.Image{}, &structs.Topic{}, &structs.TopicDislike{}, &structs.TopicLike{})
+	if err != nil {
+		fmt.Println("Error during migration:", err)
+		return
+	}
 
-        DB.SetConnMaxLifetime(time.Minute * 3)
-        DB.SetMaxOpenConns(10)
-        DB.SetMaxIdleConns(5)
-
-        if err = DB.Ping(); err != nil {
-            log.Printf("Erreur connexion BDD, tentative %d : %v\n", retries+1, err)
-            time.Sleep(5 * time.Second) // Attendre encore avant de réessayer
-            continue
-        }
-
-        log.Println("Connexionréussie !")
-        break // Si tout va bien, sortir de la boucle
-    }
-
+	fmt.Println("Database connected and tables migrated successfully")
 }

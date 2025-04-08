@@ -1,12 +1,12 @@
 package server
 
 import (
+	"Forum/backend/db"
+	"Forum/backend/utils"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"Forum/backend/db"
-	"Forum/backend/utils"
 )
 
 func Server() {
@@ -21,7 +21,7 @@ func Server() {
 
 	InitRoutes()
 	db.DBconnect()
-	fmt.Println("https://localhost:443")
+	fmt.Println("https://localhost:8080/forum/")
 
 	err := http.ListenAndServeTLS(":443", certFile, keyFile, utils.F.MainRouter)
 	if err != nil {

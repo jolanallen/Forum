@@ -10,6 +10,8 @@ services:
       MYSQL_DATABASE: forum
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
     networks:
       - forum-network  # Réseau interne, non exposé à l'extérieur
 

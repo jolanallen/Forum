@@ -1,22 +1,29 @@
 package handler
 
 import (
+	"Forum/backend/db"
+	"Forum/backend/structs"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 func AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	// affiche la page dan le {{contenent de la page html le dasborad avec tout les élément }} il y aura trois dasbord a fair en focntion de la section si on est dans hack news ou prog 
-	fmt.Fprintln(w, "Page admin dashboard")
+	var admins []structs.Admin
+	result := db.DB.Find(&admins) // Récupérer tous les admins
+	if result.Error != nil {
+		log.Fatal(result.Error)
+	}
+	fmt.Println(admins)
 }
 
 func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
-	//logic de suppression d'un utilisateur 
+	//logic de suppression d'un utilisateur
 	fmt.Fprintln(w, "Page admin delete user")
 }
 
 func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
-	// logic de supression d'un commentaire 
+	// logic de supression d'un commentaire
 	fmt.Fprintln(w, "Page admin delete comment")
 }
 
