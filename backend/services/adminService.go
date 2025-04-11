@@ -1,4 +1,4 @@
-package delete
+package services
 
 import (
 	"Forum/backend/db"
@@ -32,6 +32,8 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
+
+
 func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID")
 	var admin structs.Admin
@@ -56,6 +58,8 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
+
+
 func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID")
 	var admin structs.Admin
@@ -80,6 +84,3 @@ func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
-
-/// il faut que je fasse une fonction pour autentification user ou admin ou alors je change tout simplement de façon de faire,
-//déjà je vais commencer par les fonction de récupération
