@@ -3,6 +3,7 @@ package services
 import (
 	"Forum/backend/db"
 	"Forum/backend/structs"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,6 +22,35 @@ func CheckAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func checkIfEmailExists(email string) error {
+	existingUser, err := GetUserByEmail(email)
+	if err == nil && existingUser != nil {
+		return fmt.Errorf("Un compte avec cet email existe déjà")
+	}
+	return nil
+}
+
+func GetUserByEmail(email string) (*structs.User, error) {
+	var user structs.User
+	result := db.DB.Where("userEmail = ?", email).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
+func validateRegistrationForm(username, email, password, confirmPassword string) error {
+	if username == "" || email == "" || password == "" || confirmPassword == "" {
+		return fmt.Errorf("Tous les champs doivent être remplis")
+	}
+
+	if password != confirmPassword {
+		return fmt.Errorf("Les mots de passe ne correspondent pas")
+	}
+
+	return nil
+}
+
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
@@ -35,12 +65,12 @@ func HashPassword(password string) (string, error) {
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		// récupération formulaire
-		username := r.FormValue("username")
-		password := r.FormValue("password")
+		email := r.FormValue("userEmail")
+		password := r.FormValue("userPassword")
 
 		var user structs.User
 		//vérifier pour le .ERROR
-		if err := db.DB.Where("users_username = ?", username).First(&user).Error; err != nil {
+		if err := db.DB.Where("userEmail = ?", email).First(&user).Error; err != nil {
 			//erreur 401
 			http.Error(w, "Utilisateur inconnu", http.StatusUnauthorized)
 			return
@@ -60,7 +90,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		//on l'insert dans le nav du client (cookie)
 		http.SetCookie(w, &http.Cookie{
-			Name:     "session_token",
+			Name:     "sessionToken",
 			Value:    sessionToken,
 			Expires:  time.Now().Add(24 * time.Hour),
 			HttpOnly: true,
@@ -68,9 +98,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 		})
 		//redirection vers home et http.StatusSeeOther sert au cas où il y aura rafraichissement de la page ( status de réussite code 303)
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 	} else {
-		// Si la méthode n'est pas POST, on affiche le formulaire de connexion
-		Templates.ExecuteTemplate(w, "login.html", nil)
+		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", nil)
 	}
 }

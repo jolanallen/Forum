@@ -16,28 +16,28 @@ func GetPostByID(postID uint64) (structs.Post, error) {
 
 func GetUserIDFromUsername(username string) (uint64, error) {
 	var user structs.User
-	if err := db.DB.Where("users_username = ?", username).First(&user).Error; err != nil {
+	if err := db.DB.Where("userUsername = ?", username).First(&user).Error; err != nil {
 		return 0, fmt.Errorf("utilisateur introuvable")
 	}
 	return user.UserID, nil
 }
 func GetUserIDFromEmail(email string) (uint64, error) {
 	var user structs.User
-	if err := db.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := db.DB.Where("userEmail = ?", email).First(&user).Error; err != nil {
 		return 0, fmt.Errorf("utilisateur introuvable")
 	}
 	return user.UserID, nil
 }
 func GetUserIDFromCommentID(commentID uint64) (uint64, error) {
 	var comment structs.Comment
-	if err := db.DB.Where("comment_id = ?", commentID).First(&comment).Error; err != nil {
+	if err := db.DB.Where("commentID = ?", commentID).First(&comment).Error; err != nil {
 		return 0, fmt.Errorf("commentaire introuvable")
 	}
 	return comment.UserID, nil
 }
 func GetUserIDFromPostID(postID uint64) (uint64, error) {
 	var post structs.Post
-	if err := db.DB.Where("post_id = ?", postID).First(&post).Error; err != nil {
+	if err := db.DB.Where("postID = ?", postID).First(&post).Error; err != nil {
 		return 0, fmt.Errorf("post introuvable")
 	}
 	return post.UserID, nil
@@ -47,7 +47,7 @@ func GetUserIDFromPostID(postID uint64) (uint64, error) {
 func GetUserIDFromSession(r *http.Request) uint64 {
 	cookie, err := r.Cookie("sessionID")
 	if err != nil {
-		return 0 // Pas de session
+		return 0
 	}
 	var userID uint64
 	fmt.Sscanf(cookie.Value, "%d", &userID)
@@ -55,10 +55,23 @@ func GetUserIDFromSession(r *http.Request) uint64 {
 }
 
 
+func GetUserByID(userID uint64) (*structs.User, error) {
+	var user structs.User
+	if err := db.DB.First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
 
 
-
-
+func GetPostsByCategory(category string) ([]structs.Post, error) {
+	var posts []structs.Post
+	err := db.DB.Where("categoriesName = ?", category).Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
+}
 
 
 

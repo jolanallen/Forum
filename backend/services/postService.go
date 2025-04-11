@@ -23,7 +23,7 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Templates.ExecuteTemplate(w, "create_post.html", struct {
+		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", struct {
 			Categories []structs.Category
 		}{
 			Categories: categories,
@@ -59,19 +59,19 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-// Valide l’image (format et taille)
+// validation de l'image en fonction de la taille et du type 20
 func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
-	const maxSize = 20 << 20 // 20 MB
+	const maxSize = 20 << 20 
 
 	if header.Size > maxSize {
 		return nil, fmt.Errorf("Image trop lourde (max 20MB)")
 	}
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
-	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
+	if ext != ".jpg" && ext != ".png" && ext != ".gif" {
 		return nil, fmt.Errorf("Format d'image non supporté")
 	}
 
@@ -92,7 +92,7 @@ func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.
 // Parse les champs du formulaire (content, description, category_id)
 func parseFormValues(r *http.Request) (string, uint64, error) {
 	content := r.FormValue("content")
-	categoryIDStr := r.FormValue("category_id")
+	categoryIDStr := r.FormValue("categoriesID")
 
 	if categoryIDStr == "" {
 		return "", 0, fmt.Errorf("Catégorie obligatoire")

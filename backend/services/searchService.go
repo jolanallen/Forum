@@ -9,10 +9,10 @@ import (
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Récupérer le nom d'utilisateur recherché depuis les paramètres de la requête
-	username := r.URL.Query().Get("username")
+	username := r.URL.Query().Get("userUsername")
 
 	var users []structs.User
-	if err := db.DB.Where("username LIKE ?", "%"+username+"%").Find(&users).Error; err != nil {
+	if err := db.DB.Where("userUsername LIKE ?", "%"+username+"%").Find(&users).Error; err != nil {
 		//erreur 500
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 		return
@@ -29,9 +29,17 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Passer les utilisateurs trouvés au template
 	err = tmpl.Execute(w, users)
 	if err != nil {
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 	}
+}
+
+func SearchPosts(query string) ([]structs.Post, error) {
+	var posts []structs.Post
+	err := db.DB.Where("postComment LIKE ?", "%"+query+"%").Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
 }

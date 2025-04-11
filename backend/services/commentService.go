@@ -41,7 +41,7 @@ func UserAddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 func UserEditComment(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func UserEditComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 
@@ -101,5 +101,5 @@ func UserDeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }

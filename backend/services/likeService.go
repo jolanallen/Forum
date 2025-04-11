@@ -40,12 +40,12 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 func hasUserLikedPost(userID, postID uint64) (bool, error) {
 	var like structs.PostLike
-	err := db.DB.Where("user_id = ? AND post_id = ?", userID, postID).First(&like).Error
+	err := db.DB.Where("userID = ? AND postID = ?", userID, postID).First(&like).Error
 	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}

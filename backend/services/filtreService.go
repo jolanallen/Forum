@@ -8,6 +8,9 @@ import (
 	"strconv"
 )
 
+
+
+//bon bah j'ai deux logiques pour les filtres, j'avoue avoir été con de pas avoir remarqué ça avant
 func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -15,20 +18,23 @@ func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur lors de l'analyse du formulaire", http.StatusBadRequest)
 			return
 		}
-		categoryIDStr := r.FormValue("categoryID")
+		categoryIDStr := r.FormValue("categoriesID")
 		categoryID, err := strconv.ParseUint(categoryIDStr, 10, 64)
 		if err != nil {
 			http.Error(w, "ID de catégorie invalide", http.StatusBadRequest)
 			return
 		}
 		var posts []structs.Post
+
+///////////////////////////////////////////////tjr besoin de vérification pour le preload
+
 		err = db.DB.
 			Preload("Comments").
 			Preload("Comments.User").
 			Preload("Comments.CommentsLike").
 			Preload("Category").
 			Preload("Image").
-			Find(&posts, "category_id = ?", categoryID).Error
+			Find(&posts, "categoriesID = ?", categoryID).Error
 		if err != nil {
 			log.Println("Erreur lors de la récupération des posts:", err)
 			http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
@@ -54,7 +60,7 @@ func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Templates.ExecuteTemplate(w, "home_guest.html", struct {
+		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", struct {
 			IsAuthenticated bool
 			Posts           []structs.Post
 			Categories      []structs.Category

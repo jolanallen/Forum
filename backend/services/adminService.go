@@ -11,7 +11,7 @@ import (
 func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	AdminID := r.Context().Value("userID")
 	var admin structs.Admin
-	if err := db.DB.Where("user_id = ?", AdminID).First(&admin).Error; err != nil {
+	if err := db.DB.Where("adminID = ?", AdminID).First(&admin).Error; err != nil {
 		http.Error(w, "Accès interdit", http.StatusForbidden)
 		return
 	}
@@ -22,7 +22,7 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var user structs.User
-	if err := db.DB.Where("user_id = ?", userIDToDelete).First(&user).Error; err != nil {
+	if err := db.DB.Where("userID = ?", userIDToDelete).First(&user).Error; err != nil {
 		http.Error(w, "Utilisateur introuvable", http.StatusNotFound)
 		return
 	}
@@ -30,14 +30,14 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erreur lors de la suppression de l'utilisateur", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 
 func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID")
+	adminID := r.Context().Value("adminID")
 	var admin structs.Admin
-	if err := db.DB.Where("user_id = ?", userID).First(&admin).Error; err != nil {
+	if err := db.DB.Where("adminID = ?", adminID).First(&admin).Error; err != nil {
 		http.Error(w, "Accès interdit", http.StatusForbidden)
 		return
 	}
@@ -48,7 +48,7 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var comment structs.Comment
-	if err := db.DB.Where("comment_id = ?", commentID).First(&comment).Error; err != nil {
+	if err := db.DB.Where("commentID = ?", commentID).First(&comment).Error; err != nil {
 		http.Error(w, "Commentaire introuvable", http.StatusNotFound)
 		return
 	}
@@ -56,14 +56,14 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erreur lors de la suppression du commentaire", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 
 func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID")
+	adminID := r.Context().Value("adminID")
 	var admin structs.Admin
-	if err := db.DB.Where("user_id = ?", userID).First(&admin).Error; err != nil {
+	if err := db.DB.Where("adminID = ?", adminID).First(&admin).Error; err != nil {
 		http.Error(w, "Accès interdit", http.StatusForbidden)
 		return
 	}
@@ -74,7 +74,7 @@ func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var post structs.Post
-	if err := db.DB.Where("post_id = ?", postID).First(&post).Error; err != nil {
+	if err := db.DB.Where("postID = ?", postID).First(&post).Error; err != nil {
 		http.Error(w, "Post introuvable", http.StatusNotFound)
 		return
 	}
@@ -82,5 +82,5 @@ func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erreur lors de la suppression du post", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }

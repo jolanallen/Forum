@@ -10,19 +10,16 @@ import (
 	"time"
 )
 
-// CreateSession crée une nouvelle session pour l'utilisateur
 func CreateSession(userID uint64) (string, error) {
 	sessionToken := GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
 
-	// Créer une nouvelle session
 	session := structs.Session{
 		UserID:       userID,
 		SessionToken: sessionToken,
 		ExpiresAt:    expiration,
 	}
 
-	// Insérer la session dans la base de données
 	result := db.DB.Create(&session)
 	if result.Error != nil {
 		return "", result.Error
@@ -45,14 +42,14 @@ func CheckSession(next http.HandlerFunc) http.HandlerFunc {
 		//r.Cookie c'est les informations directe récuperer par le navigateur
 		cookie, err := r.Cookie("sessionToken")
 		if err != nil || cookie.Value == "" {
-			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 			return
 		}
 
 		var session structs.Session
 		result := db.DB.Where("sessionToken = ?", cookie.Value).First(&session)
 		if result.Error != nil || session.ExpiresAt.Before(time.Now()) {
-			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 			return
 		}
 
