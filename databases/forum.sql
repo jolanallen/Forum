@@ -80,9 +80,7 @@ CREATE TABLE `posts` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `userID` BIGINT UNSIGNED,
   PRIMARY KEY (`postID`),
-  UNIQUE KEY `postKey` (`postKey`),
   FOREIGN KEY (`imageID`) REFERENCES `images` (`imageID`),
-  FOREIGN KEY (`postLike`) REFERENCES `postsLikes` (`postLike`),
   FOREIGN KEY (`categoriesID`) REFERENCES `categories` (`categoriesID`),
   CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`) ON DELETE CASCADE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -103,7 +101,7 @@ CREATE TABLE `comments` (
   `visible` BOOLEAN,
   PRIMARY KEY (`commentID`),,
   FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
-  CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`) ON DELETE CASCADE,
+  FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 -- ajouter commentLike si on a le temps
 
