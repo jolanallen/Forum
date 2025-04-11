@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func GuestHome(w http.ResponseWriter, r *http.Request) {
+func HomeForGuest(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Page d'accueil des invités b")
 	userID := GetUserIDFromSession(r)
 

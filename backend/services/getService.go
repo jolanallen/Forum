@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func getPostByID(postID uint64) (structs.Post, error) {
+func GetPostByID(postID uint64) (structs.Post, error) {
 	var post structs.Post
 	err := db.DB.First(&post, postID).Error
 	return post, err

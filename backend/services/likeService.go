@@ -16,7 +16,7 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := getPostByID(postID)
+	post, err := GetPostByID(postID)
 	if err != nil {
 		http.Error(w, "Post introuvable", http.StatusNotFound)
 		return
