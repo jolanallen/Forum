@@ -5,15 +5,15 @@ import (
 )
 
 type User struct {
-	UsersID        uint64    `gorm:"column:users_id;primaryKey;autoIncrement"`
-	Username       string    `gorm:"column:username;size:255;not null;unique"`
-	PasswordHash   string    `gorm:"column:password_hash;type:varchar(255);not null"`
-	ProfilePicture string    `gorm:"column:profile_picture;size:255"`
-	CookiesID      *int      `gorm:"column:cookies_id;default:null"`
-	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime"`
+	UserID             uint64 `gorm:"column:user_id;primaryKey;autoIncrement"`
+	UserUsername       string `gorm:"column:user_username;unique;not null;size:255"`
+	UserEmail          string `gorm:"column:user_email;unique;not null;size:255"`
+	UserPasswordHash   string `gorm:"column:user_password_hash;not null"`
+	UserProfilePicture string `gorm:"column:user_profile_picture;size:255"`
 
-	Posts    []Post    `gorm:"foreignKey:UserID;references:UsersID;constraint:OnDelete:CASCADE"`
-	Comments []Comment `gorm:"foreignKey:UserID;references:UsersID;constraint:OnDelete:CASCADE"`
-	Topics   []Topic   `gorm:"foreignKey:UserID;references:UsersID;constraint:OnDelete:CASCADE"`
+	SessionID uint64 `gorm:"column:session_id"`
+
+	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
+
+	Session Session `gorm:"foreignKey:SessionID;references:SessionID;constraint:OnDelete:SET NULL"`
 }
-

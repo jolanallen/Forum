@@ -1,10 +1,7 @@
 package handler
 
 import (
-	"Forum/backend/db"
-	"Forum/backend/structs"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -19,14 +16,7 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	var users []structs.User
-	result := db.DB.Find(&users) // Récupérer tous les users
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-	fmt.Println(users)
-}
+
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		fmt.Fprintln(w, "Page creations post")

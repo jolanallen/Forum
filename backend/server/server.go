@@ -19,9 +19,11 @@ func Server() {
 		log.Fatal("❌ Les variables d'environnement CERT_PATH ou KEY_PATH ne sont pas définies.")
 	}
 
+	//utils.InitTemplates()
+
 	InitRoutes()
 	db.DBconnect()
-	fmt.Println("https://localhost:8080/forum/")
+	fmt.Println("https://localhost:443/forum/")
 
 	err := http.ListenAndServeTLS(":443", certFile, keyFile, utils.F.MainRouter)
 	if err != nil {
