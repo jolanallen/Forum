@@ -5,9 +5,9 @@ import (
 )
 
 type Comment struct {
-	CommentID uint64    `gorm:"column:comment_id;primaryKey;autoIncrement"`
-	UserID    uint64    `gorm:"column:user_id"`
-	PostID    uint64    `gorm:"column:post_id"`
+	CommentID uint64    `gorm:"column:commentID;primaryKey;autoIncrement"`
+	UserID    uint64    `gorm:"column:userID"`
+	PostID    uint64    `gorm:"column:postID"`
 	Content   string    `gorm:"column:content;type:text"`
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
 	Status    string    `gorm:"column:status;size:255"`

@@ -2,10 +2,12 @@ DROP TABLE IF EXISTS `sessions`;
 
 CREATE TABLE `sessions` (
   `sessionID` BIGINT UNSIGNED AUTO_INCREMENT,
+  `userID` BIGINT UNSIGNED NOT NULL,
   `sessionToken` VARCHAR(255) NOT NULL UNIQUE,
   `expires_at` DATETIME NOT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`sessionID`),
+  FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 LOCK TABLES `sessions` WRITE;
@@ -45,7 +47,6 @@ CREATE TABLE `users` (
   PRIMARY KEY (`userID`),
   UNIQUE KEY `userUsername` (`userUsername`),
   UNIQUE KEY `userEmail` (`userEmail`),
-  FOREIGN KEY (`sessionID`) REFERENCES `sessions` (`sessionID`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 LOCK TABLES `users` WRITE;
@@ -72,14 +73,14 @@ DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
   `postID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `categoriesID` BIGINT UNSIGNED,
-  `postTitle` VARCHAR(255) NOT NULL,
+  `postKey` VARCHAR(255) NOT NULL,
   `imageID` BIGINT UNSIGNED,
   `postComment` TEXT,
   `postLike` INT DEFAULT '0',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `userID` BIGINT UNSIGNED,
   PRIMARY KEY (`postID`),
-  UNIQUE KEY `postTitle` (`postTitle`),
+  UNIQUE KEY `postKey` (`postKey`),
   FOREIGN KEY (`imageID`) REFERENCES `images` (`imageID`),
   FOREIGN KEY (`postLike`) REFERENCES `postsLikes` (`postLike`),
   FOREIGN KEY (`categoriesID`) REFERENCES `categories` (`categoriesID`),

@@ -5,11 +5,11 @@ import (
 )
 
 type Admin struct {
-	AdminID           uint64 `gorm:"column:admin_id;primaryKey;autoIncrement"`
-	AdminUsername     string `gorm:"column:admin_username;unique;not null;size:255"`
-	AdminPasswordHash string `gorm:"column:admin_password_hash;not null"`
-	AdminEmail        string `gorm:"column:admin_email;unique;not null;size:255"`
-	SessionID         uint64 `gorm:"column:session_id"`
+	AdminID           uint64 `gorm:"column:adminID;primaryKey;autoIncrement"`
+	AdminUsername     string `gorm:"column:adminUsername;unique;not null;size:255"`
+	AdminPasswordHash string `gorm:"column:adminPasswordHash;not null"`
+	AdminEmail        string `gorm:"column:adminEmail;unique;not null;size:255"`
+	SessionID         uint64 `gorm:"column:sessionID"`
 
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
 

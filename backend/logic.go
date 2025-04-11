@@ -1,13 +1,11 @@
 package backend
-/*
+
 import (
 	"Forum/backend/db"
 	"Forum/backend/structs"
 	"Forum/backend/utils"
 	"bytes"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -65,51 +63,6 @@ func GuestHomeHandler(w http.ResponseWriter, r *http.Request) {
 	utils.Templates.ExecuteTemplate(w, "home.html", posts)
 }
 
-// lors du login ( changer peut-etre le nom de la fonction en fonction de la route)
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		// récupération formulaire
-		username := r.FormValue("username")
-		password := r.FormValue("password")
-
-		var user structs.User
-		//vérifier pour le .ERROR
-		if err := db.DB.Where("users_username = ?", username).First(&user).Error; err != nil {
-			//erreur 401
-			http.Error(w, "Utilisateur inconnu", http.StatusUnauthorized)
-			return
-		}
-
-		if !utils.CheckPasswordHash(password, user.PasswordHash) {
-			//erreur 401 si pwd par bon
-			http.Error(w, "Mot de passe invalide", http.StatusUnauthorized)
-			return
-		}
-		//crée un token de session pour l'utilisateur
-		token := utils.GenerateToken()
-		// Crée une nouvelle session dans la base de données
-		//SessionsID et CreatAt sont automatiques
-		session := structs.Session{
-			UserID:       user.UsersID,
-			SessionToken: token,
-			ExpiresAt:    time.Now().Add(24 * time.Hour),
-		}
-		//on l'insert dans la base de données (commande gorm)
-		db.DB.Create(&session)
-		//on l'insert dans le nav du client (cookie)
-		http.SetCookie(w, &http.Cookie{
-			Name:    "session_token",
-			Value:   token,
-			Expires: session.ExpiresAt,
-		})
-		//redirection vers home et http.StatusSeeOther sert au cas où il y aura rafraichissement de la page ( status de réussite code 303)
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	} else {
-		// Si la méthode n'est pas POST, on affiche le formulaire de connexion
-		utils.Templates.ExecuteTemplate(w, "login.html", nil)
-	}
-}
-
 // fonction pour ajouter un like au post
 func UserLikePost(w http.ResponseWriter, r *http.Request) {
 	//on récup dans la requete uniquement l'id du post et si on le trouve on l'incrémente de 1
@@ -127,7 +80,7 @@ func UserLikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post.PostLikes++
+	post.PostLike++
 	//on le met à jour
 	db.DB.Save(&post)
 	//redirection vers home mais a voir pcq c'est surement pas ça
@@ -145,7 +98,7 @@ func UserAddComment(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		userID := r.Context().Value("user_id").(uint64)
+		userID := r.Context().Value("userID").(uint64)
 		content := r.FormValue("comment")
 
 		comment := structs.Comment{
@@ -168,65 +121,69 @@ func UserAddComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method == http.MethodPost {
+
+		userID := r.Context().Value("userID").(uint64)
+		postKey := uuid.New().String()
+		content := r.FormValue("content")
+
+		// Récupération du fichier image
+		file, header, err := r.FormFile("image")
+		var imageID *uint64
+		if err == nil {
+			defer file.Close()
+			buf := bytes.NewBuffer(nil)
+			if _, err := io.Copy(buf, file); err == nil {
+				image := structs.Image{
+					Filename: header.Filename,
+					Data:     buf.Bytes(),
+					URL:      "/images/" + header.Filename,
+				}
+				if err := db.DB.Create(&image).Error; err == nil {
+					imageID = &image.ImageID
+				}
+			}
+		}
+
+		post := structs.Post{
+			PostKey:     postKey,
+			PostComment: content,
+			UserID:      userID,
+			ImageID:     imageID,
+		}
+
+		if err := db.DB.Create(&post).Error; err != nil {
+			//erreur 500
+			http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+			return
+		}
+		//tjr pas convaincu de la route
+		http.Redirect(w, r, "/forum/", http.StatusSeeOther)
+	} else {
+		// et si c'est pas une requete post on le vire
 		utils.Templates.ExecuteTemplate(w, "create_post.html", nil)
 		return
 	}
-
-	userID := r.Context().Value("user_id").(uint64)
-	postKey := uuid.New().String()
-	content := r.FormValue("content")
-
-	// Récupération du fichier image
-	file, header, err := r.FormFile("image")
-	var imageID *uint
-	if err == nil {
-		defer file.Close()
-		buf := bytes.NewBuffer(nil)
-		if _, err := io.Copy(buf, file); err == nil {
-			image := structs.Image{
-				Filename: header.Filename,
-				Data:     buf.Bytes(),
-				URL:      "/images/" + header.Filename,
-			}
-			if err := db.DB.Create(&image).Error; err == nil {
-				imageID = &image.ImageID
-			}
-		}
-	}
-
-	post := structs.Post{
-		PostKey:      postKey,
-		PostComments: content,
-		UserID:       userID,
-		ImageID:      imageID,
-	}
-
-	if err := db.DB.Create(&post).Error; err != nil {
-		http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/forum/", http.StatusSeeOther)
 }
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Récupérer le nom d'utilisateur recherché depuis les paramètres de la requête
 	username := r.URL.Query().Get("username")
 
-	// Chercher l'utilisateur dans la base de données
 	var users []structs.User
-	err := db.DB.Where("username LIKE ?", "%"+username+"%").Find(&users).Error
-	if err != nil {
-		log.Println("Erreur lors de la recherche des utilisateurs:", err)
+	if err := db.DB.Where("username LIKE ?", "%"+username+"%").Find(&users).Error; err != nil {
+		//erreur 500
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 		return
 	}
 
+	//FAUT FAIRE EN SORTE QU4IL RENVOIE VERS LE TEMPLATE DU PROFIL DE L4USER CHERCHER
+
+	//OU ALORS ON LES PARSE DIRECT
+
 	// Créer un template HTML et afficher les résultats
 	tmpl, err := template.ParseFiles("templates/search_results.html")
 	if err != nil {
-		log.Println("Erreur lors du parsing du template:", err)
 		http.Error(w, "Erreur de template", http.StatusInternalServerError)
 		return
 	}
@@ -234,45 +191,39 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Passer les utilisateurs trouvés au template
 	err = tmpl.Execute(w, users)
 	if err != nil {
-		log.Println("Erreur lors de l'exécution du template:", err)
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 	}
 }
+
+// Récupérer tous les users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []structs.User
-	result := db.DB.Find(&users) // Récupérer tous les users
+	result := db.DB.Find(&users)
 	if result.Error != nil {
 		log.Fatal(result.Error)
 	}
 	fmt.Println(users)
 }
-func AdminDashboard(w http.ResponseWriter, r *http.Request) {
+
+// Récupérer tous les admins
+// ça ne return rien, c'est juste pour la prog
+func GetAdmin(w http.ResponseWriter, r *http.Request) {
 	var admins []structs.Admin
-	result := db.DB.Find(&admins) // Récupérer tous les admins
+	result := db.DB.Find(&admins)
 	if result.Error != nil {
 		log.Fatal(result.Error)
 	}
 	fmt.Println(admins)
 }
 
-// generateSessionToken génère un token de session aléatoire
-func generateSessionToken() string {
-	token := make([]byte, 32)
-	_, err := rand.Read(token)
-	if err != nil {
-		return ""
-	}
-	return hex.EncodeToString(token)
-}
-
 // CreateSession crée une nouvelle session pour l'utilisateur
-func CreateSession(userID uint) (string, error) {
-	sessionToken := generateSessionToken()
+func CreateSession(userID uint64) (string, error) {
+	sessionToken := utils.GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
 
 	// Créer une nouvelle session
 	session := structs.Session{
-		UserID:       uint64(userID),
+		UserID:       userID,
 		SessionToken: sessionToken,
 		ExpiresAt:    expiration,
 	}
@@ -286,45 +237,64 @@ func CreateSession(userID uint) (string, error) {
 	return sessionToken, nil
 }
 
-// Login gère la logique de connexion de l'utilisateur
+// lors du login ( changer peut-etre le nom de la fonction en fonction de la route)
 func Login(w http.ResponseWriter, r *http.Request) {
-	// Ici, vous devez vérifier les identifiants de l'utilisateur et récupérer son userID
-	// Supposons que vous avez récupéré le userID de l'utilisateur après la validation des identifiants
+	if r.Method == http.MethodPost {
+		// récupération formulaire
+		username := r.FormValue("username")
+		password := r.FormValue("password")
 
-	var userID uint // Remplacez cette ligne par la récupération du userID réel
-	// Exemple: userID = 1
+		var user structs.User
+		//vérifier pour le .ERROR
+		if err := db.DB.Where("users_username = ?", username).First(&user).Error; err != nil {
+			//erreur 401
+			http.Error(w, "Utilisateur inconnu", http.StatusUnauthorized)
+			return
+		}
 
-	// Créer une session pour l'utilisateur
-	sessionToken, err := CreateSession(userID)
+		if !utils.CheckPasswordHash(password, user.UserPasswordHash) {
+			//erreur 401 si pwd par bon
+			http.Error(w, "Mot de passe invalide", http.StatusUnauthorized)
+			return
+		}
+		//crée un token de session pour l'utilisateur
+		sessionToken, err := CreateSession(user.UserID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
+			return
+		}
+
+		//on l'insert dans le nav du client (cookie)
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session_token",
+			Value:    sessionToken,
+			Expires:  time.Now().Add(24 * time.Hour),
+			HttpOnly: true,
+			Secure:   true,
+			Path:     "/",
+		})
+		//redirection vers home et http.StatusSeeOther sert au cas où il y aura rafraichissement de la page ( status de réussite code 303)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	} else {
+		// Si la méthode n'est pas POST, on affiche le formulaire de connexion
+		utils.Templates.ExecuteTemplate(w, "login.html", nil)
+	}
+}
+
+//le pb c'est qu'il prend par rapport à la session de son nav et pas de notre bdd
+func GetUserIDFromSession(r *http.Request) uint64 {
+	cookie, err := r.Cookie("sessionID")
 	if err != nil {
-		http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
-		return
+		return 0 // Pas de session
 	}
-
-	// Créer un cookie avec le token de session
-	cookie := http.Cookie{
-		Name:     "session_token",
-		Value:    sessionToken,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-		Path:     "/",
-	}
-	http.SetCookie(w, &cookie)
-
-	// Rediriger l'utilisateur vers la page d'accueil
-	http.Redirect(w, r, "/forum", http.StatusSeeOther)
+	var userID uint64
+	fmt.Sscanf(cookie.Value, "%d", &userID)
+	return userID
 }
 
-// Register gère l'inscription des utilisateurs
-func Register(w http.ResponseWriter, r *http.Request) {
-	// Crée un nouveau compte et l'ajoute à la base de données
-	// Vous devez ajouter la logique pour récupérer les données du formulaire et enregistrer l'utilisateur dans la base de données
-	fmt.Fprintln(w, "Page Register")
-}
 func GuestHome(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Page d'accueil des invités b")
-	userID := utils.GetUserIDFromSession(r)
+	userID := GetUserIDFromSession(r)
 
 	// Vérifier si l'utilisateur est authentifié
 	var isAuthenticated bool
@@ -332,9 +302,9 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		isAuthenticated = true
 	}
 
-	// Récupérer les posts, commentaires et likes (comme précédemment)
+	
 	var posts []structs.Post
-	err := db.DB.Preload("Comments").Preload("Comments.User").Preload("Comments.CommentsLike").Preload("Comments.CommentsDislike").Find(&posts).Error
+	err := db.DB.Preload("Comment").Preload("Comment.UserID").Preload("Comment.CommentsLike").Find(&posts).Error
 	if err != nil {
 		log.Println("Erreur lors de la récupération des posts:", err)
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
@@ -350,23 +320,65 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Créer un template HTML et passer les données nécessaires
-	tmpl, err := template.ParseFiles("templates/home.html")
+	// Récupérer toutes les images et utilisateurs
+	var users []structs.User
+	err = db.DB.Find(&users).Error
 	if err != nil {
-		log.Println("Erreur lors du parsing du template:", err)
-		http.Error(w, "Erreur de template", http.StatusInternalServerError)
+		log.Println("Erreur lors de la récupération des utilisateurs:", err)
+		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
+		return
+	}
+	// On passe tous les résultats au template
+	utils.Templates.ExecuteTemplate(w, "home_guest.html", struct {
+		IsAuthenticated bool
+		Posts           []structs.Post
+		Categories      []structs.Category
+		Users           []structs.User
+	}{
+		IsAuthenticated: isAuthenticated,
+		Posts:           posts,
+		Categories:      categories,
+		Users:           users,
+	})
+}
+
+func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
+	categoryIDStr := strings.TrimPrefix(r.URL.Path, "/category/")
+	categoryID, err := strconv.ParseUint(categoryIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID de catégorie invalide", http.StatusBadRequest)
 		return
 	}
 
-	// Afficher le template avec les données des posts et catégories
-	err = tmpl.Execute(w, struct {
+	var posts []structs.Post
+	err = db.DB.Preload("Comments").Preload("Comments.User").Preload("Category").Where("category_id = ?", categoryID).Find(&posts).Error
+	if err != nil {
+		log.Println("Erreur lors de la récupération des posts:", err)
+		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
+		return
+	}
+
+	userID := GetUserIDFromSession(r)
+	var isAuthenticated bool
+	if userID != 0 {
+		isAuthenticated = true
+	}
+
+	var categories []structs.Category
+	err = db.DB.Find(&categories).Error
+	if err != nil {
+		log.Println("Erreur lors de la récupération des catégories:", err)
+		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
+		return
+	}
+
+	utils.Templates.ExecuteTemplate(w, "home_guest.html", struct {
+		IsAuthenticated bool
 		Posts           []structs.Post
 		Categories      []structs.Category
-		IsAuthenticated bool
-	}{Posts: posts, Categories: categories, IsAuthenticated: isAuthenticated})
-	if err != nil {
-		log.Println("Erreur lors de l'exécution du template:", err)
-		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
-	}
+	}{
+		IsAuthenticated: isAuthenticated,
+		Posts:           posts,
+		Categories:      categories,
+	})
 }
-*/

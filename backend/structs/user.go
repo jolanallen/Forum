@@ -5,15 +5,13 @@ import (
 )
 
 type User struct {
-	UserID             uint64 `gorm:"column:user_id;primaryKey;autoIncrement"`
-	UserUsername       string `gorm:"column:user_username;unique;not null;size:255"`
-	UserEmail          string `gorm:"column:user_email;unique;not null;size:255"`
-	UserPasswordHash   string `gorm:"column:user_password_hash;not null"`
-	UserProfilePicture string `gorm:"column:user_profile_picture;size:255"`
+	UserID           uint64    `gorm:"column:userID;primaryKey;autoIncrement"`
+	UserUsername     string    `gorm:"column:userUsername;unique;not null;size:255"`
+	UserEmail        string    `gorm:"column:userEmail;unique;not null;size:255"`
+	UserPasswordHash string    `gorm:"column:userPasswordHash;not null"`
+	UserProfilePicture string  `gorm:"column:userProfilePicture;size:255"`
 
-	SessionID uint64 `gorm:"column:session_id"`
+	SessionID        uint64    `gorm:"column:sessionID"`
 
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
-
-	Session Session `gorm:"foreignKey:SessionID;references:SessionID;constraint:OnDelete:SET NULL"`
+	CreatedAt        time.Time `gorm:"column:created_at;autoCreateTime"`
 }
