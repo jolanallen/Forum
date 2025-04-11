@@ -89,7 +89,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `comments`;
 
 CREATE TABLE `comments` (
-  `comment_id` INT UNSIGNED PRIMARY KEY,
+  `comment_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `userID` INT UNSIGNED,
   `topicID` INT UNSIGNED,
   `postID` INT UNSIGNED,
@@ -99,6 +99,7 @@ CREATE TABLE `comments` (
   `visible` BOOLEAN,
   `comments_like` INT,
   `comments_dislike` INT,
+  PRIMARY KEY (`comment_id`),
   FOREIGN KEY (`topicID`) REFERENCES `topics` (`topics_id`),
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
@@ -110,9 +111,10 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `categories`;
 
 CREATE TABLE `categories` (
-  `categories_id` INT UNSIGNED PRIMARY KEY,
+  `categories_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `categories_name` VARCHAR(255),
   `categories_description` TEXT
+  PRIMARY KEY (`categories_id`),
 );
 
 LOCK TABLES `categories` WRITE;
@@ -122,7 +124,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `topics`;
 
 CREATE TABLE `topics` (
-  `topics_id` INT UNSIGNED PRIMARY KEY,
+  `topics_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `topics_categoryID` INT UNSIGNED,
   `topics_userID` INT UNSIGNED,
   `topics_title` VARCHAR(255),
@@ -130,6 +132,7 @@ CREATE TABLE `topics` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `topics_like` INT,
   `topics_dislike` INT,
+  PRIMARY KEY (`topics_id`),
   FOREIGN KEY (`topics_categoryID`) REFERENCES `categories` (`categories_id`),
   FOREIGN KEY (`topics_userID`) REFERENCES `users` (`users_id`)
 );
@@ -140,10 +143,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `topicsLikes`;
 
-CREATE TABLE `topicsLikes`; (
-  `topicsLikes_id` INT UNSIGNED PRIMARY KEY,
+CREATE TABLE `topicsLikes` (
+  `topicsLikes_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `topicID` INT UNSIGNED,
   `userID` INT UNSIGNED,
+  PRIMARY KEY (`topicsLikes_id`),
   FOREIGN KEY (`topicID`) REFERENCES `topics` (`topics_id`),
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
@@ -154,10 +158,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `topicsDislikes`;
 
-CREATE TABLE `topicsDislikes`; (
-  `topicsDislikes_id` INT UNSIGNED PRIMARY KEY,
+CREATE TABLE `topicsDislikes` (
+  `topicsDislikes_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `topicID` INT UNSIGNED,
   `userID` INT UNSIGNED,
+  PRIMARY KEY (`topicsDislikes_id`),
   FOREIGN KEY (`topicID`) REFERENCES `topics` (`topics_id`),
   FOREIGN KEY (`userID`) REFERENCES `users` (`users_id`)
 );
@@ -169,10 +174,11 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `images`;
 
 CREATE TABLE `images` (
-    `images_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `images_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `url` VARCHAR(255),
     `filename` VARCHAR(255),
     `data` BLOB
+    PRIMARY KEY (`images_id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 LOCK TABLES `images` WRITE;

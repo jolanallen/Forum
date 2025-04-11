@@ -13,3 +13,4 @@ type Session struct {
 
 	User User `gorm:"foreignKey:UserID;references:UsersID;constraint:OnDelete:CASCADE"`
 }
+

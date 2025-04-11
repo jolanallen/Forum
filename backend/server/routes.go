@@ -17,7 +17,6 @@ func InitRoutes() {
 	guestRouter.HandleFunc("/news", handler.GuestNews)
 	guestRouter.HandleFunc("/search", handler.GuestSearch)
 	guestRouter.HandleFunc("/about", handler.GuestAbout)
-	guestRouter.HandleFunc("/users", handler.GetUsers)
 
 	protectedGuestRouter := middlewares.Logger(middlewares.RateLimit(guestRouter))
 	////////////////////////sous-router pour authentification/////////////////////////////////////

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"Forum/backend/structs"
 	"fmt"
 
 	"gorm.io/driver/mysql" // Utilisation du driver MySQL de GORM v2
@@ -21,13 +20,6 @@ func DBconnect() {
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Error connecting to the database:", err)
-		return
-	}
-
-	// Automigration pour créer ou mettre à jour les tables en fonction des structures
-	err = DB.AutoMigrate(&structs.Topic{}, &structs.TopicDislike{}, &structs.TopicLike{})
-	if err != nil {
-		fmt.Println("Error during migration:", err)
 		return
 	}
 

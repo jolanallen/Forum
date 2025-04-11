@@ -10,3 +10,4 @@ type Guest struct {
 	CreatedAt     time.Time  `gorm:"column:created_at;autoCreateTime"`
 	LastVisitedAt *time.Time `gorm:"column:last_visited_at"`
 }
+
