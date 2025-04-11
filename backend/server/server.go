@@ -2,7 +2,7 @@ package server
 
 import (
 	"Forum/backend/db"
-	"Forum/backend/utils"
+	"Forum/backend"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,13 +19,13 @@ func Server() {
 		log.Fatal("❌ Les variables d'environnement CERT_PATH ou KEY_PATH ne sont pas définies.")
 	}
 
-	utils.InitTemplates()
+	backend.InitTemplates()
 
 	InitRoutes()
 	db.DBconnect()
 	fmt.Println("https://localhost:443/forum/")
 
-	err := http.ListenAndServeTLS(":443", certFile, keyFile, utils.F.MainRouter)
+	err := http.ListenAndServeTLS(":443", certFile, keyFile, backend.F.MainRouter)
 	if err != nil {
 		log.Fatal(err)
 	}

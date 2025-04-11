@@ -1,9 +1,9 @@
 package server
 
 import (
+	"Forum/backend"
 	"Forum/backend/handler"
 	"Forum/backend/middlewares"
-	"Forum/backend/utils"
 	"net/http"
 )
 
@@ -54,6 +54,6 @@ func InitRoutes() {
 	mainRouter.Handle("/user/", http.StripPrefix("/user", protectedUserRouter))
 	mainRouter.Handle("/admin/", http.StripPrefix("/admin", protectedAdminRouter))
 
-	utils.F.MainRouter = mainRouter /////////ajout du routeur principal a la structure globlal Forum
+	backend.F.MainRouter = mainRouter /////////ajout du routeur principal a la structure globlal Forum
 
 }

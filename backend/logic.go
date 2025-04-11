@@ -3,9 +3,9 @@ package backend
 import (
 	"Forum/backend/db"
 	"Forum/backend/structs"
-	"Forum/backend/utils"
 	"bytes"
-	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -16,43 +16,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
-
-// pour les COOKIES
-func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		//r.Cookie c'est les informations directe récuperer par le navigateur
-		cookie, err := r.Cookie("session_token")
-		if err != nil || cookie.Value == "" {
-			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
-			return
-		}
-
-		var session structs.Session
-		result := db.DB.Where("session_token = ?", cookie.Value).First(&session)
-		if result.Error != nil || session.ExpiresAt.Before(time.Now()) {
-			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), "userID", session.UserID)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	}
-}
-
-// POUR LES ADMIN
-// on verifie que l'userID est ou n'est pas un admin
-func AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Context().Value("userID")
-		var admin structs.Admin
-		if err := db.DB.Where("user_id = ?", userID).First(&admin).Error; err != nil {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
-		next.ServeHTTP(w, r)
-	}
-}
 
 // route, il faudra que je vérifie si c'est le bon nom et renvoie vers le bon template () aussi,
 // fonction qui renvoie tout les posts de la base de données
@@ -60,7 +25,7 @@ func GuestHomeHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []structs.Post
 	db.DB.Preload("User").Preload("Comments").Find(&posts)
 	// faut changer vers le bon template
-	utils.Templates.ExecuteTemplate(w, "home.html", posts)
+	Templates.ExecuteTemplate(w, "home.html", posts)
 }
 
 // fonction pour ajouter un like au post
@@ -161,7 +126,7 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/forum/", http.StatusSeeOther)
 	} else {
 		// et si c'est pas une requete post on le vire
-		utils.Templates.ExecuteTemplate(w, "create_post.html", nil)
+		Templates.ExecuteTemplate(w, "create_post.html", nil)
 		return
 	}
 }
@@ -218,7 +183,7 @@ func GetAdmin(w http.ResponseWriter, r *http.Request) {
 
 // CreateSession crée une nouvelle session pour l'utilisateur
 func CreateSession(userID uint64) (string, error) {
-	sessionToken := utils.GenerateToken()
+	sessionToken := GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
 
 	// Créer une nouvelle session
@@ -252,7 +217,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if !utils.CheckPasswordHash(password, user.UserPasswordHash) {
+		if !CheckPasswordHash(password, user.UserPasswordHash) {
 			//erreur 401 si pwd par bon
 			http.Error(w, "Mot de passe invalide", http.StatusUnauthorized)
 			return
@@ -277,11 +242,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
 		// Si la méthode n'est pas POST, on affiche le formulaire de connexion
-		utils.Templates.ExecuteTemplate(w, "login.html", nil)
+		Templates.ExecuteTemplate(w, "login.html", nil)
 	}
 }
 
-//le pb c'est qu'il prend par rapport à la session de son nav et pas de notre bdd
+// le pb c'est qu'il prend par rapport à la session de son nav et pas de notre bdd
 func GetUserIDFromSession(r *http.Request) uint64 {
 	cookie, err := r.Cookie("sessionID")
 	if err != nil {
@@ -302,7 +267,6 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		isAuthenticated = true
 	}
 
-	
 	var posts []structs.Post
 	err := db.DB.Preload("Comment").Preload("Comment.UserID").Preload("Comment.CommentsLike").Find(&posts).Error
 	if err != nil {
@@ -329,7 +293,7 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// On passe tous les résultats au template
-	utils.Templates.ExecuteTemplate(w, "home_guest.html", struct {
+	Templates.ExecuteTemplate(w, "home_guest.html", struct {
 		IsAuthenticated bool
 		Posts           []structs.Post
 		Categories      []structs.Category
@@ -372,7 +336,7 @@ func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Templates.ExecuteTemplate(w, "home_guest.html", struct {
+	Templates.ExecuteTemplate(w, "home_guest.html", struct {
 		IsAuthenticated bool
 		Posts           []structs.Post
 		Categories      []structs.Category
@@ -382,3 +346,108 @@ func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 		Categories:      categories,
 	})
 }
+
+// vérification du hash = hash du mot de passe (à voir si j'ai fait la logique pour hashé le mdp au départ)
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+// je pourrais l'enlevé si JOLAN VIENS M4AIDER
+func InitTemplates() {
+	var err error
+	Templates, err = template.ParseGlob("templates/*.html")
+	if err != nil {
+		log.Fatal("Erreur lors du parsing des templates:", err)
+	}
+}
+
+var Templates *template.Template
+
+var F = &structs.Forum{} ///variables global ( à voir ce que je voulais en faire)
+
+// création d'un token de sessions aléatoire de byte en hexa
+func GenerateToken() string {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)
+}
+
+func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
+	AdminID := r.Context().Value("userID")
+	var admin structs.Admin
+	if err := db.DB.Where("user_id = ?", AdminID).First(&admin).Error; err != nil {
+		http.Error(w, "Accès interdit", http.StatusForbidden)
+		return
+	}
+	userIDStr := strings.TrimPrefix(r.URL.Path, "/admin/delete/user/")
+	userIDToDelete, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+		return
+	}
+	var user structs.User
+	if err := db.DB.Where("user_id = ?", userIDToDelete).First(&user).Error; err != nil {
+		http.Error(w, "Utilisateur introuvable", http.StatusNotFound)
+		return
+	}
+	if err := db.DB.Delete(&user).Error; err != nil {
+		http.Error(w, "Erreur lors de la suppression de l'utilisateur", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID")
+	var admin structs.Admin
+	if err := db.DB.Where("user_id = ?", userID).First(&admin).Error; err != nil {
+		http.Error(w, "Accès interdit", http.StatusForbidden)
+		return
+	}
+	commentIDStr := strings.TrimPrefix(r.URL.Path, "/admin/delete/comment/")
+	commentID, err := strconv.ParseUint(commentIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID commentaire invalide", http.StatusBadRequest)
+		return
+	}
+	var comment structs.Comment
+	if err := db.DB.Where("comment_id = ?", commentID).First(&comment).Error; err != nil {
+		http.Error(w, "Commentaire introuvable", http.StatusNotFound)
+		return
+	}
+	if err := db.DB.Delete(&comment).Error; err != nil {
+		http.Error(w, "Erreur lors de la suppression du commentaire", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID")
+	var admin structs.Admin
+	if err := db.DB.Where("user_id = ?", userID).First(&admin).Error; err != nil {
+		http.Error(w, "Accès interdit", http.StatusForbidden)
+		return
+	}
+	postIDStr := strings.TrimPrefix(r.URL.Path, "/admin/delete/post/")
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID post invalide", http.StatusBadRequest)
+		return
+	}
+	var post structs.Post
+	if err := db.DB.Where("post_id = ?", postID).First(&post).Error; err != nil {
+		http.Error(w, "Post introuvable", http.StatusNotFound)
+		return
+	}
+	if err := db.DB.Delete(&post).Error; err != nil {
+		http.Error(w, "Erreur lors de la suppression du post", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+/// il faut que je fasse une fonction pour autentification user ou admin ou alors je change tout simplement de façon de faire,
+//déjà je vais commencer par les fonction de récupération
