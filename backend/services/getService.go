@@ -77,7 +77,14 @@ func GetCommentByID(commentID uint64) (structs.Comment, error) {
 	return comment, err
 }
 
-
+func GetUserByEmail(email string) (*structs.User, error) {
+	var user structs.User
+	result := db.DB.Where("userEmail = ?", email).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
 
 
 

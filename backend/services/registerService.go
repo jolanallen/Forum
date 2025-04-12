@@ -20,7 +20,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("userPassword")
 		confirmPassword := r.FormValue("confirm_password")
 
-		err := validateRegistrationForm(username, email, password, confirmPassword)
+		err := CheckRegistrationForm(username, email, password, confirmPassword)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

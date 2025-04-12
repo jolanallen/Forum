@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	/*"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/oauth2/v2"*/
+	"golang.org/x/oauth2"           // <- pour oauth2.Config et AccessTypeOffline
+	"golang.org/x/oauth2/google"    // <- pour google.Endpoint
+	oauth2api "google.golang.org/api/oauth2/v2"
 )
 
 func CheckAdmin(next http.HandlerFunc) http.HandlerFunc {
@@ -25,7 +25,7 @@ func CheckAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func checkIfEmailExists(email string) error {
+func CheckIfEmailExists(email string) error {
 	existingUser, err := GetUserByEmail(email)
 	if err == nil && existingUser != nil {
 		return fmt.Errorf("Un compte avec cet email existe déjà")
@@ -33,16 +33,7 @@ func checkIfEmailExists(email string) error {
 	return nil
 }
 
-func GetUserByEmail(email string) (*structs.User, error) {
-	var user structs.User
-	result := db.DB.Where("userEmail = ?", email).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &user, nil
-}
-
-func validateRegistrationForm(username, email, password, confirmPassword string) error {
+func CheckRegistrationForm(username, email, password, confirmPassword string) error {
 	if username == "" || email == "" || password == "" || confirmPassword == "" {
 		return fmt.Errorf("Tous les champs doivent être remplis")
 	}
@@ -63,17 +54,6 @@ func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
-/*
-var oauth2Config = oauth2.Config{
-	ClientID:     "YOUR_GOOGLE_CLIENT_ID",
-	ClientSecret: "YOUR_GOOGLE_CLIENT_SECRET",
-	RedirectURL:  "http://localhost:8080/auth/google/callback",
-	Scopes: []string{
-		"https://www.googleapis.com/auth/userinfo.email",
-		"https://www.googleapis.com/auth/userinfo.profile",
-	},
-	Endpoint: google.Endpoint,
-}*/
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
@@ -111,7 +91,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", nil)
 	}
 }
-/*
+
+var oauth2Config = oauth2.Config{
+	ClientID:     "YOUR_GOOGLE_CLIENT_ID",
+	ClientSecret: "YOUR_GOOGLE_CLIENT_SECRET",
+	RedirectURL:  "http://localhost:8080/auth/google/callback",
+	Scopes: []string{
+		"https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+	},
+	Endpoint: google.Endpoint,
+}
+
 func GoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := oauth2Config.AuthCodeURL("", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusFound)
@@ -132,19 +123,14 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	client := oauth2Config.Client(r.Context(), token)
 
-	oauth2Service, err := oauth2.New(client)
+	oauth2Service, err := oauth2api.New(client)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de la création du service OAuth2 : %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	googleService, err := oauth2.New(client)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Erreur lors de la création du client Google : %v", err), http.StatusInternalServerError)
-		return
-	}
 
-	userInfo, err := googleService.Userinfo.Get().Do()
+	userInfo, err := oauth2Service.Userinfo.Get().Do()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de la récupération des infos utilisateur : %v", err), http.StatusInternalServerError)
 		return
@@ -180,7 +166,5 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	// Rediriger l'utilisateur vers la page d'accueil
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
-*/
