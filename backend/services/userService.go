@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 )
-
+//pdp
 func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
 
@@ -41,6 +41,16 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 			}
 			user.UserPasswordHash = hashedPassword
 		}
+
+		if file, _, err := r.FormFile("userProfilePicture"); err == nil {
+			imageID, err := validateImage(file, nil)
+			if err != nil {
+				http.Error(w, "Erreur de validation de l'image : "+err.Error(), http.StatusBadRequest)
+				return
+			}
+			user.UserProfilePicture = &imageID.ImageID
+		}
+
 		if err := UpdateUser(user); err != nil {
 			http.Error(w, "Erreur lors de la mise à jour du profil", http.StatusInternalServerError)
 			return

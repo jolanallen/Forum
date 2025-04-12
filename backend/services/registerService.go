@@ -1,6 +1,7 @@
 package services
 
 import (
+	"Forum/backend/db"
 	"Forum/backend/structs"
 	"log"
 	"net/http"
@@ -19,11 +20,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("userPassword")
 		confirmPassword := r.FormValue("confirm_password")
 
-		if username == "" || email == "" || password == "" || confirmPassword == "" {
-			http.Error(w, "Tous les champs doivent être remplis", http.StatusBadRequest)
+		err := validateRegistrationForm(username, email, password, confirmPassword)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		if password != confirmPassword {
 			http.Error(w, "Les mots de passe ne correspondent pas", http.StatusBadRequest)
 			return
@@ -45,11 +46,27 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 			return
 		}
+		var userProfileImageID *uint64
+		userProfileImageID, err = handleImageUpload(r)
+		if err != nil {
+			log.Println("Erreur d'upload d'image, utilisation de l'image par défaut")
+			defaultImage := structs.Image{
+				Filename: "default.png",
+				URL:      "/images/default.png",
+			}
 
+			if err := db.DB.Create(&defaultImage).Error; err != nil {
+				log.Println("Erreur lors de l'ajout de l'image par défaut:", err)
+				http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
+				return
+			}
+			userProfileImageID = &defaultImage.ImageID
+		}
 		newUser := structs.User{
-			UserUsername:     username,
-			UserEmail:        email,
-			UserPasswordHash: hashedPassword,
+			UserUsername:       username,
+			UserEmail:          email,
+			UserPasswordHash:   hashedPassword,
+			UserProfilePicture: userProfileImageID,
 		}
 
 		if err := CreateUser(&newUser); err != nil {

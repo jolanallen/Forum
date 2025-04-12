@@ -54,7 +54,6 @@ func GetUserIDFromSession(r *http.Request) uint64 {
 	return userID
 }
 
-
 func GetUserByID(userID uint64) (*structs.User, error) {
 	var user structs.User
 	if err := db.DB.First(&user, userID).Error; err != nil {
@@ -63,7 +62,6 @@ func GetUserByID(userID uint64) (*structs.User, error) {
 	return &user, nil
 }
 
-
 func GetPostsByCategory(category string) ([]structs.Post, error) {
 	var posts []structs.Post
 	err := db.DB.Where("categoriesName = ?", category).Find(&posts).Error
@@ -71,6 +69,12 @@ func GetPostsByCategory(category string) ([]structs.Post, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func GetCommentByID(commentID uint64) (structs.Comment, error) {
+	var comment structs.Comment
+	err := db.DB.First(&comment, commentID).Error
+	return comment, err
 }
 
 

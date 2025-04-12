@@ -19,7 +19,7 @@ func HandleCommentActions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func UserAddComment(w http.ResponseWriter, r *http.Request) {
-	postID, err := ExtractPostIDFromURL(r.URL.Path)
+	postID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {
 		http.Error(w, "ID invalide", http.StatusBadRequest)
 		return
@@ -45,7 +45,7 @@ func UserAddComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserEditComment(w http.ResponseWriter, r *http.Request) {
-	commentID, err := ExtractCommentIDFromURL(r.URL.Path)
+	commentID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {
 		http.Error(w, "ID de commentaire invalide", http.StatusBadRequest)
 		return
@@ -78,7 +78,7 @@ func UserEditComment(w http.ResponseWriter, r *http.Request) {
 
 
 func UserDeleteComment(w http.ResponseWriter, r *http.Request) {
-	commentID, err := ExtractCommentIDFromURL(r.URL.Path)
+	commentID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {
 		http.Error(w, "ID de commentaire invalide", http.StatusBadRequest)
 		return

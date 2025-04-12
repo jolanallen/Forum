@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	/*"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/oauth2/v2"*/
 )
 
 func CheckAdmin(next http.HandlerFunc) http.HandlerFunc {
@@ -56,39 +59,44 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-// pour hashé le mdp
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
+/*
+var oauth2Config = oauth2.Config{
+	ClientID:     "YOUR_GOOGLE_CLIENT_ID",
+	ClientSecret: "YOUR_GOOGLE_CLIENT_SECRET",
+	RedirectURL:  "http://localhost:8080/auth/google/callback",
+	Scopes: []string{
+		"https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+	},
+	Endpoint: google.Endpoint,
+}*/
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		// récupération formulaire
 		email := r.FormValue("userEmail")
 		password := r.FormValue("userPassword")
 
 		var user structs.User
-		//vérifier pour le .ERROR
 		if err := db.DB.Where("userEmail = ?", email).First(&user).Error; err != nil {
-			//erreur 401
 			http.Error(w, "Utilisateur inconnu", http.StatusUnauthorized)
 			return
 		}
 
 		if !CheckPasswordHash(password, user.UserPasswordHash) {
-			//erreur 401 si pwd par bon
 			http.Error(w, "Mot de passe invalide", http.StatusUnauthorized)
 			return
 		}
-		//crée un token de session pour l'utilisateur
+
 		sessionToken, err := CreateSession(user.UserID)
 		if err != nil {
 			http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
 			return
 		}
 
-		//on l'insert dans le nav du client (cookie)
 		http.SetCookie(w, &http.Cookie{
 			Name:     "sessionToken",
 			Value:    sessionToken,
@@ -97,9 +105,82 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Secure:   true,
 			Path:     "/",
 		})
-		//redirection vers home et http.StatusSeeOther sert au cas où il y aura rafraichissement de la page ( status de réussite code 303)
+
 		http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 	} else {
 		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", nil)
 	}
 }
+/*
+func GoogleLogin(w http.ResponseWriter, r *http.Request) {
+	url := oauth2Config.AuthCodeURL("", oauth2.AccessTypeOffline)
+	http.Redirect(w, r, url, http.StatusFound)
+}
+
+func GoogleCallback(w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		http.Error(w, "Code manquant", http.StatusBadRequest)
+		return
+	}
+
+	token, err := oauth2Config.Exchange(r.Context(), code)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erreur lors de l'échange du code : %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	client := oauth2Config.Client(r.Context(), token)
+
+	oauth2Service, err := oauth2.New(client)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erreur lors de la création du service OAuth2 : %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	googleService, err := oauth2.New(client)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erreur lors de la création du client Google : %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	userInfo, err := googleService.Userinfo.Get().Do()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erreur lors de la récupération des infos utilisateur : %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	var user structs.User
+	if err := db.DB.Where("userEmail = ?", userInfo.Email).First(&user).Error; err != nil {
+		// Si l'utilisateur n'existe pas, créez un nouvel utilisateur
+		newUser := structs.User{
+			UserUsername:     userInfo.Name,
+			UserEmail:        userInfo.Email,
+			UserPasswordHash: "",
+		}
+		if err := db.DB.Create(&newUser).Error; err != nil {
+			http.Error(w, "Erreur lors de la création de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+		user = newUser
+	}
+
+	sessionToken, err := CreateSession(user.UserID)
+	if err != nil {
+		http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "sessionToken",
+		Value:    sessionToken,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+	})
+
+	// Rediriger l'utilisateur vers la page d'accueil
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+}
+*/

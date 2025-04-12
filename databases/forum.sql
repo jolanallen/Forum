@@ -35,18 +35,20 @@ UNLOCK TABLES;
 
 
 DROP TABLE IF EXISTS `users`;
-
+--on relie image à pdp
 CREATE TABLE `users` (
   `userID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `userUsername` VARCHAR(255) NOT NULL,
   `userEmail` VARCHAR(255) NOT NULL,	
   `userPasswordHash` VARCHAR(255) NOT NULL,
-  `userProfilePicture` VARCHAR(255),
+  `userProfilePicture` BIGINT UNSIGNED,
   `sessionID` INT DEFAULT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`userID`),
   UNIQUE KEY `userUsername` (`userUsername`),
   UNIQUE KEY `userEmail` (`userEmail`),
+  FOREIGN KEY (`userProfilePicture`) REFERENCES `images` (`imageID`),
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 LOCK TABLES `users` WRITE;
@@ -90,7 +92,7 @@ LOCK TABLES `posts` WRITE;
 UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `comments`;
-
+--on va rajouter les likes pour les posts
 CREATE TABLE `comments` (
   `commentID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `userID` BIGINT UNSIGNED,
@@ -99,6 +101,7 @@ CREATE TABLE `comments` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `status` VARCHAR(255),
   `visible` BOOLEAN,
+  `commentLike` INT DEFAULT '0',
   PRIMARY KEY (`commentID`),,
   FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
   FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`)
@@ -123,17 +126,17 @@ LOCK TABLES `categories` WRITE;
 
 UNLOCK TABLES;
 
-DROP TABLE IF EXISTS `postsLikes`;
-
-CREATE TABLE `postsLikes` (
+DROP TABLE IF EXISTS `likes`;
+--postsLikes en Likes
+CREATE TABLE `likes` (
   `userID` INT UNSIGNED,
   `postID` BIGINT UNSIGNED,
-  `postLike` BOOLEAN DEFAULT 0,
+  `type` VARCHAR(255),
   FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`),
   FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-LOCK TABLES `postsLikes` WRITE;
+LOCK TABLES `likes` WRITE;
 
 UNLOCK TABLES;
 

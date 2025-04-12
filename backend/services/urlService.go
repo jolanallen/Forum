@@ -1,17 +1,15 @@
 package services
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 )
 
-func ExtractPostIDFromURL(path string) (uint64, error) {
-	postIDStr := strings.TrimPrefix(path, "/user/post/")
-	postIDStr = strings.TrimSuffix(postIDStr, "/like")
-	return strconv.ParseUint(postIDStr, 10, 64)
-}
-
-func ExtractCommentIDFromURL(path string) (uint64, error) {
-	commentIDStr := strings.TrimPrefix(path, "/user/comment/")
-	return strconv.ParseUint(commentIDStr, 10, 64)
+func ExtractIDFromURL(path string) (uint64, error) {
+	parts := strings.Split(path, "/")
+	if len(parts) < 3 {
+		return 0, errors.New("URL invalide")
+	}
+	return strconv.ParseUint(parts[2], 10, 64)
 }
