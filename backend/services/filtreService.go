@@ -9,7 +9,7 @@ import (
 )
 
 
-
+//flemme d'expliquer si on le garde pas
 //bon bah j'ai deux logiques pour les filtres, j'avoue avoir été con de pas avoir remarqué ça avant
 func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {

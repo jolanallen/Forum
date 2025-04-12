@@ -7,7 +7,10 @@ import (
 	"log"
 	"net/http"
 )
+//faudrait peut-être créer la session ici et après dans login,register,et googleregister transferer la session
 
+// /backend/handler/guest.go
+// execute le template du home pour guest
 func GuestHome(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Page d'accueil des invités b")
 	userID := GetUserIDFromSession(r)
@@ -55,7 +58,8 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		Users:           users,
 	})
 }
-
+// /backend/handler/guest.go
+// execute le template de la catégorie "hack"
 func GuestHack(w http.ResponseWriter, r *http.Request) {
 	posts, err := GetPostsByCategory("hack")
 	if err != nil {
@@ -64,7 +68,8 @@ func GuestHack(w http.ResponseWriter, r *http.Request) {
 	}
 	Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", posts)
 }
-
+// /backend/handler/guest.go
+// execute le template de la catégorie "prog"
 func GuestProg(w http.ResponseWriter, r *http.Request) {
 	posts, err := GetPostsByCategory("prog")
 	if err != nil {
@@ -73,7 +78,8 @@ func GuestProg(w http.ResponseWriter, r *http.Request) {
 	}
 	Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", posts)
 }
-
+// /backend/handler/guest.go
+// execute le template de la catégorie "news"
 func GuestNews(w http.ResponseWriter, r *http.Request) {
 	posts, err := GetPostsByCategory("news")
 	if err != nil {
@@ -83,7 +89,8 @@ func GuestNews(w http.ResponseWriter, r *http.Request) {
 	Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", posts)
 }
 
-
+// /backend/handler/guest.go
+// cherche des postes comprenant dans leur commentaire le mot clé
 func GuestSearch(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("query")
 	posts, err := SearchPosts(searchQuery)

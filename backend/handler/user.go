@@ -6,7 +6,6 @@ import (
 )
 
 
-
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		fmt.Fprintln(w, "Page creations post")

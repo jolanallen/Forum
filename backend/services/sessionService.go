@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"time"
 )
-
+// /services
+// func GoogleRegister; Login
+// crée une session pour un utilisateur donné et génère un token de session
 func CreateSession(userID uint64) (string, error) {
 	sessionToken := GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
@@ -27,7 +29,9 @@ func CreateSession(userID uint64) (string, error) {
 
 	return sessionToken, nil
 }
-
+// /services
+// func CreateSession
+// crée un token de 32 octets aléatoires pour la session de l'utilisateur
 func GenerateToken() string {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
@@ -36,7 +40,8 @@ func GenerateToken() string {
 	}
 	return hex.EncodeToString(b)
 }
-
+// backend\middlewares\auth.go avec le nom Authentication
+// verifie si l'utilisateur est authentifié en vérifiant la présence d'un cookie de session valide
 func CheckSession(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//r.Cookie c'est les informations directe récuperer par le navigateur

@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"strings"
 )
-
+//utilisé dans backend/handler/admin.go
+//admin qui supprime un user
 func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	AdminID := r.Context().Value("userID")
 	var admin structs.Admin
@@ -33,7 +34,8 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-
+//utilisé dans backend/handler/admin.go
+//admin qui supprime un commentaire
 func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	adminID := r.Context().Value("adminID")
 	var admin structs.Admin
@@ -59,7 +61,8 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-
+//utilisé dans backend/handler/admin.go
+//admin qui supprime un post
 func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 	adminID := r.Context().Value("adminID")
 	var admin structs.Admin

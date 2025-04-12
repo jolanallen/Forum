@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"strconv"
 )
-//pdp
+// /backend/handler/user.go				/backend/server/routes.go
+// renvoie vers le template avec les changelent du profile de l'user
 func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
 
@@ -59,7 +60,8 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 	}
 }
-
+// /backend/handler/user.go				/backend/server/routes.go
+// deconnecte et supprime les cookies
 func Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_id",
@@ -69,7 +71,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	})
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
-
+// /backend/handler/user.go				/backend/server/routes.go
+// execute le template pour le profile de l'user
 func UserProfile(w http.ResponseWriter, r *http.Request) {
 	userIDStr := r.URL.Path[len("/user/"):]
 	userID, err := strconv.ParseUint(userIDStr, 10, 64)
@@ -85,14 +88,18 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", user)
 }
-
+// /services
+// func UserEditProfile
+// sauvegarde les changements de l'user dans la bdd
 func UpdateUser(user *structs.User) error {
 	if err := db.DB.Save(user).Error; err != nil {
 		return err
 	}
 	return nil
 }
-
+// /services
+// func Register
+// implémente l'user dans la bdd
 func CreateUser(user *structs.User) error {
 	if err := db.DB.Create(user).Error; err != nil {
 		return err

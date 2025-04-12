@@ -5,7 +5,8 @@ import (
 	"Forum/backend/structs"
 	"net/http"
 )
-
+// /services
+// les actions possibles à faire sur les commentaires
 func HandleCommentActions(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -18,6 +19,9 @@ func HandleCommentActions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
 	}
 }
+// /services
+// func HandleCommentActions
+// ajoute un commentaire à un post
 func UserAddComment(w http.ResponseWriter, r *http.Request) {
 	postID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {
@@ -43,7 +47,9 @@ func UserAddComment(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
-
+// /services
+// func HandleCommentActions
+// modifier un commentaire si on est le crateur du commentaire
 func UserEditComment(w http.ResponseWriter, r *http.Request) {
 	commentID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {
@@ -74,9 +80,9 @@ func UserEditComment(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-
-
-
+// /services
+// func HandleCommentActions
+// supprime un commentaire si on est bien le createur du commentaire
 func UserDeleteComment(w http.ResponseWriter, r *http.Request) {
 	commentID, err := ExtractIDFromURL(r.URL.Path)
 	if err != nil {

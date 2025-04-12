@@ -10,6 +10,8 @@ var Templates *template.Template
 
 var F = &structs.Forum{}
 
+
+// InitTemplates initialise les templates HTML
 func InitTemplates() {
 	var err error
 	Templates, err = template.ParseGlob("templates/*.html")

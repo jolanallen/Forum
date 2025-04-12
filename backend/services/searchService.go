@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"text/template"
 )
-
+// /backend/handler/guest.go
+// cherche un utilisateur dans la base de données en fonction de son nom d'utilisateur
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -39,7 +40,9 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
+// /services
+// func GuestSearch
+//cherche post en fonction de mots clés dans les commentaires
 func SearchPosts(query string) ([]structs.Post, error) {
 	var posts []structs.Post
 	err := db.DB.Where("postComment LIKE ?", "%"+query+"%").Find(&posts).Error

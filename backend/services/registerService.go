@@ -6,7 +6,8 @@ import (
 	"log"
 	"net/http"
 )
-
+//utilisé dans backend\handler\authentification.go
+//enregistrer un nouvel utilisateur
 func Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// j'imagine que c'est pour register.html mais dans le doute je mettrais prairies

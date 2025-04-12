@@ -14,7 +14,8 @@ import (
 
 	"github.com/google/uuid"
 )
-
+// /backend/handler/user.go
+// crée un post
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		var categories []structs.Category
@@ -61,7 +62,8 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
-
+// /backend/handler/user.go
+// func handleImageUpload; UserEditProfile
 // validation de l'image en fonction de la taille et du type 20
 func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
 	const maxSize = 20 << 20 
@@ -88,8 +90,9 @@ func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.
 
 	return image, nil
 }
-
-// Parse les champs du formulaire (content, description, category_id)
+// /services
+// func UserCreatePost
+// verifier et oblige categorie
 func parseFormValues(r *http.Request) (string, uint64, error) {
 	content := r.FormValue("content")
 	categoryIDStr := r.FormValue("categoriesID")
@@ -105,7 +108,8 @@ func parseFormValues(r *http.Request) (string, uint64, error) {
 
 	return content, categoryID, nil
 }
-
+// /services
+// func Register; UserCreatePost
 // Gère l'upload de l’image (renvoie l’image ID ou nil)
 func handleImageUpload(r *http.Request) (*uint64, error) {
 	file, header, err := r.FormFile("image")
