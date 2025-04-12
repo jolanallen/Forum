@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/oauth2"           // <- pour oauth2.Config et AccessTypeOffline
-	"golang.org/x/oauth2/google"    // <- pour google.Endpoint
+	"golang.org/x/oauth2" 
+	"golang.org/x/oauth2/google"
 	oauth2api "google.golang.org/api/oauth2/v2"
 )
 
@@ -138,7 +138,6 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	var user structs.User
 	if err := db.DB.Where("userEmail = ?", userInfo.Email).First(&user).Error; err != nil {
-		// Si l'utilisateur n'existe pas, créez un nouvel utilisateur
 		newUser := structs.User{
 			UserUsername:     userInfo.Name,
 			UserEmail:        userInfo.Email,
