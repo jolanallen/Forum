@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"text/template"
 )
-// /backend/handler/guest.go
-// cherche un utilisateur dans la base de données en fonction de son nom d'utilisateur
+
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -21,9 +20,9 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 			return
 		}
-		/////////////surement /profile/
+		
 		if len(users) == 1 {
-			http.Redirect(w, r, "BoyWithUke_Prairies"+users[0].UserUsername, http.StatusSeeOther)
+			http.Redirect(w, r, "/profile/"+users[0].UserUsername, http.StatusSeeOther)
 			return
 		}
 		tmpl, err := template.ParseFiles("templates/search_results.html")
@@ -40,9 +39,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-// /services
-// func GuestSearch
-//cherche post en fonction de mots clés dans les commentaires
+
 func SearchPosts(query string) ([]structs.Post, error) {
 	var posts []structs.Post
 	err := db.DB.Where("postComment LIKE ?", "%"+query+"%").Find(&posts).Error

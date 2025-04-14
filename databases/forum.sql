@@ -102,7 +102,7 @@ CREATE TABLE `comments` (
   `status` VARCHAR(255),
   `visible` BOOLEAN,
   `commentLike` INT DEFAULT '0',
-  PRIMARY KEY (`commentID`),,
+  PRIMARY KEY (`commentID`),
   FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
   FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -119,7 +119,7 @@ CREATE TABLE `categories` (
   `categoriesName` VARCHAR(255),
   `categoriesDescription` TEXT,
   PRIMARY KEY (`categoriesID`),
-  UNIQUE KEY `categoriesName` (`categoriesName`),
+  UNIQUE KEY `categoriesName` (`categoriesName`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 LOCK TABLES `categories` WRITE;
@@ -155,8 +155,40 @@ LOCK TABLES `images` WRITE;
 UNLOCK TABLES;
 
 -- Insertion des données
-INSERT INTO `admins` (`adminUsername`, `adminPasswordHash`, `adminEmail`, `sessionID`) VALUES
-('adminMar', '123', 'marino@ynov.com', 3);
+-- Insertion d'images
+INSERT INTO `images` (`url`, `filename`, `data`) VALUES 
+('http://example.com/img/profile1.jpg', 'profile1.jpg', NULL),
+('http://example.com/img/post1.jpg', 'post1.jpg', NULL);
 
-INSERT INTO `users` (`userUsername`, `userPasswordHash`, `sessionID`) VALUES 
-('userMar', '1234', 2);
+-- Insertion de sessions
+INSERT INTO `sessions` (`userID`, `sessionToken`, `expires_at`) VALUES 
+(1, 'token123', '2025-12-31 23:59:59'),
+(2, 'token456', '2025-12-31 23:59:59');
+
+-- Insertion d'administrateurs
+INSERT INTO `admins` (`adminUsername`, `adminPasswordHash`, `adminEmail`, `sessionID`) VALUES 
+('adminMar', 'admin123', 'admin@domain.com', 1);
+
+-- Insertion d'utilisateurs
+INSERT INTO `users` (`userUsername`, `userPasswordHash`, `userProfilePicture`, `sessionID`) VALUES 
+('userMar', 'user123', 1, 2);
+
+-- Insertion de catégories
+INSERT INTO `categories` (`categoriesName`, `categoriesDescription`) VALUES 
+('Technology', 'Discussions about technology and innovations'),
+('Science', 'Discussions about scientific discoveries');
+
+-- Insertion de posts
+INSERT INTO `posts` (`categoriesID`, `postKey`, `imageID`, `postComment`, `userID`) VALUES 
+(1, 'Post on Tech', 2, 'This is a great post about technology.', 2),
+(2, 'Post on Science', 1, 'Let s discuss the latest scientific discovery.', 1);
+
+-- Insertion de commentaires
+INSERT INTO `comments` (`userID`, `postID`, `content`, `status`) VALUES 
+(1, 1, 'Great post! Very informative.', 'published'),
+(2, 2, 'This is a very interesting discussion!', 'published');
+
+-- Insertion de likes
+INSERT INTO `likes` (`userID`, `postID`, `type`) VALUES 
+(2, 1, 'like'),
+(1, 2, 'like');

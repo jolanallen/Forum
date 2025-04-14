@@ -8,27 +8,12 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/oauth2" 
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 	oauth2api "google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
 )
-// backend\middlewares\auth.go avec le nom AdminAuthorization
-// verifier si l'utilisateur est admin
-func CheckAdmin(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Context().Value("userID")
-		var admin structs.Admin
-		if err := db.DB.Where("userID = ?", userID).First(&admin).Error; err != nil {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
-		next.ServeHTTP(w, r)
-	}
-}
-// /services
-// func Login
-// verifier si l'utilisateur existe grace au mail
+
 func CheckIfEmailExists(email string) (*structs.User, error) {
 	user, err := GetUserByEmail(email)
 	if err != nil || user == nil {
@@ -37,9 +22,6 @@ func CheckIfEmailExists(email string) (*structs.User, error) {
 	return user, nil
 }
 
-// /services
-// func Register
-// verifier que tout les champs sont remplis et que le mdp et le confirmPassword correspondent
 func CheckRegistrationForm(username, email, password, confirmPassword string) error {
 	if username == "" || email == "" || password == "" || confirmPassword == "" {
 		return fmt.Errorf("Tous les champs doivent être remplis")
@@ -51,24 +33,17 @@ func CheckRegistrationForm(username, email, password, confirmPassword string) er
 
 	return nil
 }
-// /services
-// func Login
-// compare le mdp mis en paramétre avec le hash du mdp de la bdd
+
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-// /services
-// func Register;UserEditProfile
-//hash le mdp mis en paramétre
+
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
-
-//utilisé dans backend\handler\authentification.go
-//login user (pour l'instant j'ai que pour user, pas encore de logique pour admin donc on en discutera ensemble)
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		email := r.FormValue("userEmail")
@@ -117,15 +92,15 @@ var oauth2Config = oauth2.Config{
 	Endpoint: google.Endpoint,
 }
 
-//utilisé dans backend\handler\authentification.go			(il faut ajouté la route qu'il faut jolan)
-//google authentification
+// utilisé dans backend\handler\authentification.go			(il faut ajouté la route qu'il faut jolan)
+// google authentification
 func GoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := oauth2Config.AuthCodeURL("", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-//utilisé dans backend\handler\authentification.go			(il faut ajouté la route qu'il faut jolan)
-//pour enregistrer un utilisateur à partir de google
+// utilisé dans backend\handler\authentification.go			(il faut ajouté la route qu'il faut jolan)
+// pour enregistrer un utilisateur à partir de google
 func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
@@ -146,7 +121,6 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Erreur lors de la création du service OAuth2 : %v", err), http.StatusInternalServerError)
 		return
 	}
-
 
 	userInfo, err := oauth2Service.Userinfo.Get().Do()
 	if err != nil {
@@ -185,3 +159,4 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
+

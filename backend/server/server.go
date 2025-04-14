@@ -19,7 +19,7 @@ func Server() {
 		log.Fatal("❌ Les variables d'environnement CERT_PATH ou KEY_PATH ne sont pas définies.")
 	}
 
-	services.InitTemplates()
+	
 
 	InitRoutes()
 	db.DBconnect()

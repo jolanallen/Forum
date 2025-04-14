@@ -13,4 +13,6 @@ type Post struct {
 	PostLike    int       `gorm:"default:0;column:postLike" json:"postLike"`
 	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
 	UserID      uint64    `gorm:"column:userID" json:"userID"`
+
+	Comments []Comment `gorm:"foreignKey:PostID;references:PostID"`
 }

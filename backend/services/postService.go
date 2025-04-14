@@ -11,62 +11,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
 )
+
 // /backend/handler/user.go
 // crée un post
-func UserCreatePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		var categories []structs.Category
-		if err := db.DB.Find(&categories).Error; err != nil {
-			http.Error(w, "Erreur lors de la récupération des catégories", http.StatusInternalServerError)
-			return
-		}
 
-		Templates.ExecuteTemplate(w, "BoyWithUke_Prairies", struct {
-			Categories []structs.Category
-		}{
-			Categories: categories,
-		})
-		return
-	}
-
-	userID := r.Context().Value("userID").(uint64)
-	postKey := uuid.New().String()
-
-	content, categoryID, err := parseFormValues(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	imageID, err := handleImageUpload(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	post := structs.Post{
-		PostKey:     postKey,
-		PostComment: content,
-		UserID:      userID,
-		ImageID:     imageID,
-		CategoryID:  categoryID,
-	}
-
-	if err := db.DB.Create(&post).Error; err != nil {
-		http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
-}
-// /backend/handler/user.go
-// func handleImageUpload; UserEditProfile
-// validation de l'image en fonction de la taille et du type 20
-func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
-	const maxSize = 20 << 20 
+func ValidateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
+	const maxSize = 20 << 20
 
 	if header.Size > maxSize {
 		return nil, fmt.Errorf("Image trop lourde (max 20MB)")
@@ -90,10 +41,8 @@ func validateImage(file multipart.File, header *multipart.FileHeader) (*structs.
 
 	return image, nil
 }
-// /services
-// func UserCreatePost
-// verifier et oblige categorie
-func parseFormValues(r *http.Request) (string, uint64, error) {
+
+func ParseFormValues(r *http.Request) (string, uint64, error) {
 	content := r.FormValue("content")
 	categoryIDStr := r.FormValue("categoriesID")
 
@@ -108,17 +57,15 @@ func parseFormValues(r *http.Request) (string, uint64, error) {
 
 	return content, categoryID, nil
 }
-// /services
-// func Register; UserCreatePost
-// Gère l'upload de l’image (renvoie l’image ID ou nil)
-func handleImageUpload(r *http.Request) (*uint64, error) {
+
+func HandleImageUpload(r *http.Request) (*uint64, error) {
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		return nil, nil // pas d'image envoyée = pas une erreur
+		return nil, nil
 	}
 	defer file.Close()
 
-	image, err := validateImage(file, header)
+	image, err := ValidateImage(file, header)
 	if err != nil {
 		return nil, err
 	}

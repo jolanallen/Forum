@@ -1,61 +1,218 @@
 package handler
 
 import (
-	"fmt"
+	"Forum/backend/db"
+	"Forum/backend/services"
+	"Forum/backend/structs"
 	"net/http"
+	"strconv"
+
+	"github.com/google/uuid"
 )
 
-
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		fmt.Fprintln(w, "Page creations post")
+	if r.Method != http.MethodPost {
+		var categories []structs.Category
+		if err := db.DB.Find(&categories).Error; err != nil {
+			http.Error(w, "Erreur lors de la récupération des catégories", http.StatusInternalServerError)
+			return
+		}
 
-	//////////////dans postService.go/////////////////////
-
-	} else if r.Method == http.MethodPost {
-
+		services.RenderTemplate(w, "BoyWithUke_Prairies", struct {
+			Categories []structs.Category
+		}{
+			Categories: categories,
+		})
+		return
 	}
+
+	userID := r.Context().Value("userID").(uint64)
+	postKey := uuid.New().String()
+
+	content, categoryID, err := services.ParseFormValues(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	imageID, err := services.HandleImageUpload(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	post := structs.Post{
+		PostKey:     postKey,
+		PostComment: content,
+		UserID:      userID,
+		ImageID:     imageID,
+		CategoryID:  categoryID,
+	}
+
+	if err := db.DB.Create(&post).Error; err != nil {
+		http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-func UserLikePost(w http.ResponseWriter, r *http.Request) {
-	// utilisation de l'id du post dans l'url et ajoute le like si et suelment si l'utilisateur actuelle na pas déja liker peut être introduire un middleware pour checker si liker ou pas  au post dans la base de donnée en utilisant queries.go
-	fmt.Fprintln(w, "Page creations post")
+func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(uint64)
+	commentID, err := services.ExtractIDFromURL(r.URL.Path)
+	if err != nil {
+		http.Error(w, "ID de commentaire invalide", http.StatusBadRequest)
+		return
+	}
 
-	//////////////dans likeService.go/////////////////////
+	comment, err := services.GetCommentByID(commentID)
+	if err != nil {
+		http.Error(w, "Commentaire introuvable", http.StatusNotFound)
+		return
+	}
 
+	hasLiked, err := services.HasUserLikedComment(userID, commentID)
+	if err != nil {
+		http.Error(w, "Erreur lors de la vérification du like", http.StatusInternalServerError)
+		return
+	}
+
+	if hasLiked {
+		if err := services.RemoveLikeFromComment(userID, commentID, &comment); err != nil {
+			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		if err := services.AddLikeToComment(userID, commentID, &comment); err != nil {
+			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
-func UserAddComment(w http.ResponseWriter, r *http.Request) {
-	// utilisation de l'id du post dans l'url et ajoute le commentaire au post dans la base de donnée en utilisant queries.go
-	fmt.Fprintln(w, "Page creations post")
+func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(uint64)
+	postID, err := services.ExtractIDFromURL(r.URL.Path)
+	if err != nil {
+		http.Error(w, "ID invalide", http.StatusBadRequest)
+		return
+	}
 
-	//////////////dans commentService.go/////////////////////
+	post, err := services.GetPostByID(postID)
+	if err != nil {
+		http.Error(w, "Post introuvable", http.StatusNotFound)
+		return
+	}
 
+	hasLiked, err := services.HasUserLikedPost(userID, postID)
+	if err != nil {
+		http.Error(w, "Erreur lors de la vérification du like", http.StatusInternalServerError)
+		return
+	}
+
+	if hasLiked {
+		if err := services.RemoveLikeFromPost(userID, postID, &post); err != nil {
+			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		if err := services.AddLikeToPost(userID, postID, &post); err != nil {
+			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 func UserEditProfile(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(uint64)
+
 	if r.Method == http.MethodGet {
-		//afiche le profil de l'utilisateur  en fait des requet a la bdd pour récuperer les info de l'utilisateur
-		fmt.Fprintln(w, "Page de modification de l'utilisateur connecter")
-
+		user, err := services.GetUserByID(userID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des informations du profil", http.StatusInternalServerError)
+			return
+		}
+		services.RenderTemplate(w, "BoyWithUke_Prairies", user)
 	} else if r.Method == http.MethodPost {
-		// Logique de mise à jour du profil
-		//si et suelment si le profil qui demande a être a jour est celui de l'utilisateur qui fait la demande peut être introduire un middleware pour checker si le porfile est celui de l'utilisateur en cours ou pas  si oui ajouter les modfication dan sla bdd
+		newUsername := r.FormValue("userUsername")
+		newEmail := r.FormValue("userEmail")
+		newPassword := r.FormValue("userPassword")
+		user, err := services.GetUserByID(userID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+		if newUsername != "" {
+			user.UserUsername = newUsername
+		}
+		if newEmail != "" {
+			user.UserEmail = newEmail
+		}
+		if newPassword != "" {
+			hashedPassword, err := services.HashPassword(newPassword)
+			if err != nil {
+				http.Error(w, "Erreur lors du hachage du mot de passe", http.StatusInternalServerError)
+				return
+			}
+			user.UserPasswordHash = hashedPassword
+		}
 
+		if file, _, err := r.FormFile("userProfilePicture"); err == nil {
+			imageID, err := services.ValidateImage(file, nil)
+			if err != nil {
+				http.Error(w, "Erreur de validation de l'image : "+err.Error(), http.StatusBadRequest)
+				return
+			}
+			user.UserProfilePicture = &imageID.ImageID
+		}
+
+		if err := UpdateUser(user); err != nil {
+			http.Error(w, "Erreur lors de la mise à jour du profil", http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 	}
-
-	//////////////dans userService.go/////////////////////
-
 }
 func Logout(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "log out ")
-
-	//////////////dans userService.go/////////////////////
-
+	http.SetCookie(w, &http.Cookie{
+		Name:   "session_id",
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
+	})
+	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
 }
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Page profils des autres user ")
+	userIDStr := r.URL.Path[len("/user/"):]
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID d'utilisateur invalide", http.StatusBadRequest)
+		return
+	}
 
-	//////////////dans userService.go/////////////////////
+	user, err := services.GetUserByID(userID)
+	if err != nil {
+		http.Error(w, "Utilisateur introuvable", http.StatusNotFound)
+		return
+	}
+	services.RenderTemplate(w, "BoyWithUke_Prairies", user)
+}
 
+func UpdateUser(user *structs.User) error {
+	if err := db.DB.Save(user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateUser(user *structs.User) error {
+	if err := db.DB.Create(user).Error; err != nil {
+		return err
+	}
+	return nil
 }

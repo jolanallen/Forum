@@ -1,32 +1,42 @@
 package middlewares
 
 import (
+	"Forum/backend/db"
+	"Forum/backend/structs"
+	"context"
 	"net/http"
+	"time"
 )
 
-// Middleware d'authentification
+
 func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Vérifier si l'utilisateur est connecté (exemple simple avec cookie/session)
-		///A COMPLETER AVEC LE CHECK DE SESSION DE COOKIES SI L'UTILISATERU EST BIEN UN UTILISATEUR CONNECTER//////////////////////////////: ///
+		cookie, err := r.Cookie("sessionToken")
+		if err != nil || cookie.Value == "" {
+			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+			return
+		}
 
-////////////////////vas voir dans le validationService ///////////////////////////////////
-//checksessions surement ( nan mais aussi authentification de quoi, si tu précise pas je fais du mieux que je peux)
+		var session structs.Session
+		result := db.DB.Where("sessionToken = ?", cookie.Value).First(&session)
+		if result.Error != nil || session.ExpiresAt.Before(time.Now()) {
+			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+			return
+		}
 
-		next.ServeHTTP(w, r) // Passer au handler suivant
+		ctx := context.WithValue(r.Context(), "userID", session.UserID)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-
-// Middleware d'autorisation admin
 func AdminAuthorization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Vérifier si l'utilisateur est admin (exemple simple)
-		////////:A COMPLETER IL FAUT VERIFIER AVEC UN COOOKIES QUE LA PERSOONNES CONNECTER EST BIEN ADMIN/////////////////////////////
-
-////////////////////vas voir dans le validationService ///////////////////////////////////
-//j'ai surement mis checkadmin
-
+		userID := r.Context().Value("userID")
+		var admin structs.Admin
+		if err := db.DB.Where("userID = ?", userID).First(&admin).Error; err != nil {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
