@@ -12,7 +12,7 @@
             <a href="/">HACK FORUMS</a>
         </div>
         <nav class="header-nav">
-            {{if .User}}
+            {{if .IsAuthenticated}}
                 <span>Bonjour, {{.User.Username}}</span>
                 <a href="/notifications" class="notifications">
                     🔔 {{.User.UnreadNotifications}}
@@ -29,19 +29,17 @@
             <li class="nav-item {{if eq .ActivePage "home"}}active{{end}}">
                 <a href="/">Accueil</a>
             </li>
-            <li class="nav-item {{if eq .ActivePage "hack"}}active{{end}}">
-                <a href="/forum/hack">Hack</a>
-            </li>
-            <li class="nav-item {{if eq .ActivePage "prog"}}active{{end}}">
-                <a href="/forum/prog">Programmation</a>
-            </li>
-            <li class="nav-item {{if eq .ActivePage "news"}}active{{end}}">
-                <a href="/forum/news">News</a>
-            </li>
-            {{if .User.IsAdmin}}
-            <li class="nav-item admin {{if eq .ActivePage "admin"}}active{{end}}">
-                <a href="/admin">Administration</a>
-            </li>
+            {{range .Categories}}
+                <li class="nav-item {{if eq .ActivePage .Name}}active{{end}}">
+                    <a href="/forum/{{.Name | lower}}">{{.Name}}</a>
+                </li>
+            {{end}}
+            {{if .IsAuthenticated}}
+                {{if .User.IsAdmin}}
+                <li class="nav-item admin {{if eq .ActivePage "admin"}}active{{end}}">
+                    <a href="/admin">Administration</a>
+                </li>
+                {{end}}
             {{end}}
         </ul>
     </nav>
@@ -50,31 +48,31 @@
         <div class="forum-container">
             <div class="forum-header">
                 <h1>Derniers Posts</h1>
-                <a href="/new-post" class="btn btn-primary">Créer un nouveau post</a>
-            </div>
-        
-            <div class="posts-list">
-                {{range .Posts}}
-                <div class="post-card">
-                    <div class="post-header">
-                        <h3>{{.Title}}</h3>
-                        <span class="post-author">Par {{.Author}}</span>
-                    </div>
-                    <div class="post-preview">
-                        {{.Preview}}
-                    </div>
-                    <div class="post-footer">
-                        <span>{{.CreatedAt}}</span>
-                        <div class="post-actions">
-                            <a href="/post/{{.ID}}" class="btn btn-secondary">Lire plus</a>
-                            <span>💬 {{.CommentCount}}</span>
-                        </div>
-                    </div>
-                </div>
+                {{if .IsAuthenticated}}
+                    <a href="/new-post" class="btn btn-primary">Créer un nouveau post</a>
                 {{end}}
             </div>
-        
             
+            <div class="posts-list">
+                {{range .Posts}}
+                    <div class="post-card">
+                        <div class="post-header">
+                            <h3>{{.Title}}</h3>
+                            <span class="post-author">Par {{.Author}}</span>
+                        </div>
+                        <div class="post-preview">
+                            {{.Preview}}
+                        </div>
+                        <div class="post-footer">
+                            <span>{{.CreatedAt}}</span>
+                            <div class="post-actions">
+                                <a href="/post/{{.ID}}" class="btn btn-secondary">Lire plus</a>
+                                <span>💬 {{.CommentCount}}</span>
+                            </div>
+                        </div>
+                    </div>
+                {{end}}
+            </div>
         </div>
     </main>
 

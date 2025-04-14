@@ -18,13 +18,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
 var F = &structs.Forum{}
 
+func lower(s string) string {
+	return strings.ToLower(s)
+}
+
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+
+	funcMap := template.FuncMap{
+		"lower": lower,
+	}
+
 	templatePath := filepath.Join("web/templates", tmpl)
-	t, err := template.ParseFiles(templatePath)
+
+	t, err := template.New(tmpl).Funcs(funcMap).ParseFiles(templatePath)
 	if err != nil {
 		http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
 		log.Println("Erreur parsing template:", err)

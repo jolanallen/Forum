@@ -33,6 +33,15 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := structs.User{}
+	if isAuthenticated {
+		err = db.DB.First(&user, userID).Error
+		if err != nil {
+			log.Println("Erreur lors de la récupération de l'utilisateur:", err)
+			http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
+			return
+		}
+	}
 	var users []structs.User
 	err = db.DB.Find(&users).Error
 	if err != nil {
@@ -40,16 +49,23 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 		return
 	}
+	log.Println("IsAuthenticated:", isAuthenticated)
+	log.Println("Posts:", posts)
+	log.Println("Categories:", categories)
+	log.Println("Users:", users)
+	log.Println("User:", user)
 	services.RenderTemplate(w, "forum/home.html", struct {
 		IsAuthenticated bool
 		Posts           []structs.Post
 		Categories      []structs.Category
 		Users           []structs.User
+		User            structs.User
 	}{
 		IsAuthenticated: isAuthenticated,
 		Posts:           posts,
 		Categories:      categories,
 		Users:           users,
+		User:            user,
 	})
 }
 

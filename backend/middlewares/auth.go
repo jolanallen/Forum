@@ -13,14 +13,14 @@ func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("sessionToken")
 		if err != nil || cookie.Value == "" {
-			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
 		var session structs.Session
 		result := db.DB.Where("sessionToken = ?", cookie.Value).First(&session)
 		if result.Error != nil || session.ExpiresAt.Before(time.Now()) {
-			http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
