@@ -153,42 +153,61 @@ CREATE TABLE `images` (
 LOCK TABLES `images` WRITE;
 
 UNLOCK TABLES;
+DROP TABLE IF EXISTS `adminDashboardData`;
 
--- Insertion des données
--- Insertion d'images
+CREATE TABLE `adminDashboardData` (
+  `dashboardID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `adminID` BIGINT UNSIGNED NOT NULL,
+  `totalUsers` BIGINT DEFAULT 0,
+  `totalPosts` BIGINT DEFAULT 0,
+  `totalComments` BIGINT DEFAULT 0,
+  `totalGuests` BIGINT DEFAULT 0,
+  `lastLogin` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `generated_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`dashboardID`),
+  FOREIGN KEY (`adminID`) REFERENCES `admins` (`adminID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+INSERT INTO `adminDashboardData` (
+  `adminID`, `totalUsers`, `totalPosts`, `totalComments`, `totalGuests`, `lastLogin`
+) VALUES (
+  1,
+  (SELECT COUNT(*) FROM `users`),
+  (SELECT COUNT(*) FROM `posts`),
+  (SELECT COUNT(*) FROM `comments`),
+  (SELECT COUNT(*) FROM `guests`),
+  NOW()
+);
+
+
 INSERT INTO `images` (`url`, `filename`, `data`) VALUES 
 ('http://example.com/img/profile1.jpg', 'profile1.jpg', NULL),
 ('http://example.com/img/post1.jpg', 'post1.jpg', NULL);
 
--- Insertion de sessions
+
 INSERT INTO `sessions` (`userID`, `sessionToken`, `expires_at`) VALUES 
 (1, 'token123', '2025-12-31 23:59:59'),
 (2, 'token456', '2025-12-31 23:59:59');
 
--- Insertion d'administrateurs
 INSERT INTO `admins` (`adminUsername`, `adminPasswordHash`, `adminEmail`, `sessionID`) VALUES 
 ('adminMar', 'admin123', 'admin@domain.com', 1);
 
--- Insertion d'utilisateurs
 INSERT INTO `users` (`userUsername`, `userPasswordHash`, `userProfilePicture`, `sessionID`) VALUES 
 ('userMar', 'user123', 1, 2);
 
--- Insertion de catégories
 INSERT INTO `categories` (`categoriesName`, `categoriesDescription`) VALUES 
 ('Technology', 'Discussions about technology and innovations'),
 ('Science', 'Discussions about scientific discoveries');
 
--- Insertion de posts
 INSERT INTO `posts` (`categoriesID`, `postKey`, `imageID`, `postComment`, `userID`) VALUES 
 (1, 'Post on Tech', 2, 'This is a great post about technology.', 2),
 (2, 'Post on Science', 1, 'Let s discuss the latest scientific discovery.', 1);
 
--- Insertion de commentaires
 INSERT INTO `comments` (`userID`, `postID`, `content`, `status`) VALUES 
 (1, 1, 'Great post! Very informative.', 'published'),
 (2, 2, 'This is a very interesting discussion!', 'published');
 
--- Insertion de likes
 INSERT INTO `likes` (`userID`, `postID`, `type`) VALUES 
 (2, 1, 'like'),
 (1, 2, 'like');

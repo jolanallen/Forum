@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,10 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 
 func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
-	commentID, err := services.ExtractIDFromURL(r.URL.Path)
+	vars := mux.Vars(r)
+	commentIDStr := vars["id"]
+
+	commentID, err := strconv.ParseUint(commentIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID de commentaire invalide", http.StatusBadRequest)
 		return
@@ -89,14 +93,17 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+	http.Redirect(w, r, "/forum", http.StatusSeeOther)
 }
 
 func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
-	postID, err := services.ExtractIDFromURL(r.URL.Path)
+	vars := mux.Vars(r)
+	postIDStr := vars["id"]
+
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "ID invalide", http.StatusBadRequest)
+		http.Error(w, "ID de post invalide", http.StatusBadRequest)
 		return
 	}
 
@@ -124,10 +131,13 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+	http.Redirect(w, r, "/forum", http.StatusSeeOther)
 }
 func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
+	vars := mux.Vars(r)
+	// Si nécessaire, tu peux récupérer l'id aussi de cette manière
+	_ = vars["id"] // L'id dans l'URL est utilisé ici pour la vérification si nécessaire
 
 	if r.Method == http.MethodGet {
 		user, err := services.GetUserByID(userID)
@@ -135,7 +145,7 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur lors de la récupération des informations du profil", http.StatusInternalServerError)
 			return
 		}
-		services.RenderTemplate(w, "BoyWithUke_Prairies", user)
+		services.RenderTemplate(w, "profile_edit.html", user)
 	} else if r.Method == http.MethodPost {
 		newUsername := r.FormValue("userUsername")
 		newEmail := r.FormValue("userEmail")
@@ -174,9 +184,10 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+		http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
 	}
 }
+
 func Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_id",

@@ -13,9 +13,6 @@ import (
 	"strings"
 )
 
-// /backend/handler/user.go
-// crée un post
-
 func ValidateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
 	const maxSize = 20 << 20
 

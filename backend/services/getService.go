@@ -5,6 +5,7 @@ import (
 	"Forum/backend/structs"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func GetPostByID(postID uint64) (structs.Post, error) {
@@ -53,4 +54,38 @@ func GetUserByEmail(email string) (*structs.User, error) {
 		return nil, result.Error
 	}
 	return &user, nil
+}
+
+func GetAdminDashboardData(adminID uint64) (*structs.AdminDashboardData, error) {
+	var data structs.AdminDashboardData
+	data.AdminID = adminID
+	data.GeneratedAt = time.Now()
+
+	var count int64
+
+	err := db.DB.Model(&structs.User{}).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	data.TotalUsers = uint64(count)
+
+	err = db.DB.Model(&structs.Post{}).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	data.TotalPosts = uint64(count)
+
+	err = db.DB.Model(&structs.Comment{}).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	data.TotalComments = uint64(count)
+
+	err = db.DB.Model(&structs.Guest{}).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	data.TotalGuests = uint64(count)
+
+	return &data, nil
 }

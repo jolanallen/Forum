@@ -2,7 +2,9 @@ package handler
 
 import (
 	"Forum/backend/db"
+	"Forum/backend/services"
 	"Forum/backend/structs"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -10,10 +12,32 @@ import (
 )
 
 func AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	adminID := r.Context().Value("adminID")
+	if adminID == nil {
+		http.Error(w, "Non autorisé", http.StatusUnauthorized)
+		return
+	}
 
-	//////////////dans adminService.go/////////////////////
+	adminIDUint, ok := adminID.(uint64)
+	if !ok {
+		http.Error(w, "Erreur ID admin", http.StatusBadRequest)
+		return
+	}
+
+	data, err := services.GetAdminDashboardData(adminIDUint)
+	if err != nil {
+		http.Error(w, "Erreur lors du chargement du dashboard", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/admin_dashboard.html")
+	if err != nil {
+		http.Error(w, "Erreur template", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, data)
 }
-
 func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	adminID := r.Context().Value("userID")
 	var admin structs.Admin
