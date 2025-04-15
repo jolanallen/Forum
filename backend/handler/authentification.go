@@ -42,7 +42,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionToken, err := services.CreateSession(user.UserID)
+		sessionToken, err := services.CreateUserSession(user.UserID)
 		if err != nil {
 			http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
 			return
@@ -180,7 +180,7 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 		user = newUser
 	}
 
-	sessionToken, err := services.CreateSession(user.UserID)
+	sessionToken, err := services.CreateUserSession(user.UserID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
 		return

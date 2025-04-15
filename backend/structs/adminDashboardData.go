@@ -12,5 +12,4 @@ type AdminDashboardData struct {
 	LastLogin     time.Time `gorm:"column:lastLogin"`
 	GeneratedAt   time.Time `gorm:"column:generated_at;autoCreateTime"`
 
-	Admin Admin `gorm:"foreignKey:AdminID;references:AdminID;constraint:OnDelete:CASCADE"`
 }

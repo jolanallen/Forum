@@ -5,13 +5,15 @@ import (
 )
 
 type User struct {
-	UserID             uint64  `gorm:"column:userID;primaryKey;autoIncrement"`       // userID en clé primaire auto-incrémentée
-	UserUsername       string  `gorm:"column:userUsername;unique;not null;size:255"` // userUsername unique et non nul
-	UserEmail          string  `gorm:"column:userEmail;unique;not null;size:255"`    // userEmail unique et non nul
-	UserPasswordHash   string  `gorm:"column:userPasswordHash;not null"`             // hash du mot de passe
-	UserProfilePicture uint64 `gorm:"column:userProfilePicture" json:"imageID"`     // Clé étrangère vers `images` (photo de profil)
-	SessionID          uint64  `gorm:"column:sessionID"`                             // sessionID associé à l'utilisateur
+	UserID            uint64         `gorm:"primaryKey;autoIncrement"`
+	UserUsername      string         `gorm:"size:255;not null;unique"`
+	UserEmail         string         `gorm:"size:255;not null;unique"`
+	UserPasswordHash  string         `gorm:"size:255;not null"`
+	UserProfilePicture uint64        `gorm:"not null"`
+	CreatedAt         time.Time      `gorm:"autoCreateTime"`
 
-	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime"` // `created_at` automatique
-	ProfilePicture Image     `gorm:"foreignKey:UserProfilePicture;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	ProfileImage      Image          `gorm:"foreignKey:UserProfilePicture;references:ImageID"`
+	Sessions          []SessionUser  `gorm:"foreignKey:UserID"`
 }
+
+

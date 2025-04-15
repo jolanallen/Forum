@@ -8,19 +8,19 @@ import (
 )
 
 func HasUserLikedPost(userID, postID uint64) (bool, error) {
-	var like structs.Like
-	err := db.DB.Where("userID = ? AND postID = ? AND type = ?", userID, postID, "Post").First(&like).Error
+	var like structs.PostLike
+	err := db.DB.Where("userID = ? AND postID = ?", userID, postID).First(&like).Error
 	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}
 	return err == nil, err
 }
 
+
 func AddLikeToPost(userID, postID uint64, post *structs.Post) error {
-	newLike := structs.Like{
+	newLike := structs.PostLike{
 		UserID: userID,
-		PostID: &postID,
-		Type:   "Post",
+		PostID: postID,
 	}
 	if err := db.DB.Create(&newLike).Error; err != nil {
 		return err
@@ -29,8 +29,9 @@ func AddLikeToPost(userID, postID uint64, post *structs.Post) error {
 	return db.DB.Save(post).Error
 }
 
+
 func RemoveLikeFromPost(userID, postID uint64, post *structs.Post) error {
-	if err := db.DB.Where("userID = ? AND postID = ? AND type = ?", userID, postID, "Post").Delete(&structs.Like{}).Error; err != nil {
+	if err := db.DB.Where("userID = ? AND postID = ?", userID, postID).Delete(&structs.PostLike{}).Error; err != nil {
 		return err
 	}
 	if post.PostLike > 0 {
@@ -39,9 +40,10 @@ func RemoveLikeFromPost(userID, postID uint64, post *structs.Post) error {
 	return db.DB.Save(post).Error
 }
 
+
 func HasUserLikedComment(userID, commentID uint64) (bool, error) {
-	var like structs.Like
-	err := db.DB.Where("userID = ? AND postID = ? AND type = ?", userID, commentID, "comment").First(&like).Error
+	var like structs.CommentLike
+	err := db.DB.Where("userID = ? AND commentID = ?", userID, commentID).First(&like).Error
 	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}
@@ -49,10 +51,9 @@ func HasUserLikedComment(userID, commentID uint64) (bool, error) {
 }
 
 func AddLikeToComment(userID, commentID uint64, comment *structs.Comment) error {
-	newLike := structs.Like{
-		UserID: userID,
-		PostID: &commentID,
-		Type:   "comment",
+	newLike := structs.CommentLike{
+		UserID:    userID,
+		CommentID: commentID,
 	}
 	if err := db.DB.Create(&newLike).Error; err != nil {
 		return err
@@ -61,8 +62,9 @@ func AddLikeToComment(userID, commentID uint64, comment *structs.Comment) error 
 	return db.DB.Save(comment).Error
 }
 
+
 func RemoveLikeFromComment(userID, commentID uint64, comment *structs.Comment) error {
-	if err := db.DB.Where("userID = ? AND commentID = ? AND type = ?", userID, commentID, "comment").Delete(&structs.Like{}).Error; err != nil {
+	if err := db.DB.Where("userID = ? AND commentID = ?", userID, commentID).Delete(&structs.CommentLike{}).Error; err != nil {
 		return err
 	}
 	if comment.CommentLike > 0 {
