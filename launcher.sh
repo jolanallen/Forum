@@ -83,4 +83,4 @@ if [ -d "main" ]; then
 fi
 go run .  # Ou une commande Go spécifique si nécessaire
 
-echo "https://localhost:8080/forum/"
+echo "https://localhost:443/forum/"
