@@ -12,11 +12,12 @@ type Post struct {
 	PostComment string    `gorm:"column:postComment" json:"postComment"`
 	PostLike    int       `gorm:"default:0;column:postLike" json:"postLike"`
 	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
-	UserID      uint64    `gorm:"column:userID;not null" json:"userID"`
+	UserID      uint64    `gorm:"column:userID" json:"userID"`
+	Preview     string    `gorm:"-"`  // Ce champ ne sera pas mappé à la base de données
 
-	Image    Image     `gorm:"foreignKey:ImageID;references:ImageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Category Category  `gorm:"foreignKey:CategoryID;references:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	User     User      `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Comments []Comment `gorm:"foreignKey:PostID;references:PostID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	// Relations
+	Comments []Comment `gorm:"foreignKey:PostID;references:PostID;constraint:OnDelete:CASCADE" json:"comments"`
+	Image    *Image    `gorm:"foreignKey:ImageID;references:ImageID" json:"image"`
+	User     User      `gorm:"foreignKey:UserID;references:UserID" json:"user"`
 }
 

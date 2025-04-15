@@ -13,22 +13,27 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - forum-network  # Réseau interne, non exposé à l'extérieur
+      forum-network:
+        ipv4_address: 172.30.0.2
 
   forum:
     image: forum-app
     container_name: forum-container
     depends_on:
       - mysql
-    networks:
-      - forum-network
     ports:
-      - "443:443"  # Expose le port 443 de l'hôte vers le conteneur
+      - "443:443"
     environment:
       CERT_PATH: /app/ssl_tls/cert.pem
       KEY_PATH: /app/ssl_tls/key.pem
     command: ["/app/forum-app"]
+    networks:
+      forum-network:
+        ipv4_address: 172.30.0.3
 
 networks:
   forum-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

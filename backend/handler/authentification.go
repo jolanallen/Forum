@@ -59,14 +59,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	} else {
-		services.RenderTemplate(w, "login.html", nil)
+		services.RenderTemplate(w, "auth/login.html", nil)
 	}
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 
-		services.RenderTemplate(w, "register.html", nil)
+		services.RenderTemplate(w, "auth/register.html", nil)
 		return
 	}
 

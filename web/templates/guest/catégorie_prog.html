@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Catégorie - Prog</title>
+</head>
+<body>
+    <h1>Posts dans la catégorie : Prog</h1>
+    {{range .}}
+        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+            <p><strong>ID:</strong> {{.PostID}}</p>
+            <p><strong>Commentaire:</strong> {{.PostComment}}</p>
+            <p><strong>Likes:</strong> {{.PostLike}}</p>
+            <p><strong>Date de création:</strong> {{.CreatedAt}}</p>
+            <p><strong>Auteur ID:</strong> {{.UserID}}</p>
+        </div>
+    {{else}}
+        <p>Aucun post trouvé dans cette catégorie.</p>
+    {{end}}
+</body>
+</html>

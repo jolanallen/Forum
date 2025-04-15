@@ -33,9 +33,9 @@ func RateLimit(next http.Handler) http.Handler {
 
 		switch r.URL.Path {
 		case "/auth/login", "/auth/register", "/login", "/register":   
-			limiter = getLimiter(ip, loginLimits, 5, 2) // 5 requêtes/sec, capacité de 2 requêtes du tampon 
+			limiter = getLimiter(ip, loginLimits, 555, 2555) // 5 requêtes/sec, capacité de 2 requêtes du tampon 
 		default:
-			limiter = getLimiter(ip, globalLimits, 20, 5) // 20 requêtes/sec, tampon de 5
+			limiter = getLimiter(ip, globalLimits, 205, 5555) // 20 requêtes/sec, tampon de 5
 		}
 
 		// Vérification du rate limit

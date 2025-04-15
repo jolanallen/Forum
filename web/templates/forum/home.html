@@ -7,21 +7,24 @@
     <link rel="stylesheet" href="../static/css/main.css">
 </head>
 <body>
+    <!-- En-tête -->
     <header class="main-header">
         <div class="logo">
-            <a href="/">HACK FORUMS</a>
+            <h1><a href="/forum">HACK FORUMS</a></h1>
         </div>
         <nav class="header-nav">
-            {{if .User.UserUsername}}
+            {{if .IsAuthenticated}}
                 <span>Bonjour, {{.User.UserUsername}}</span>
-                <a href="/logout" class="logout">Déconnexion</a>
+                <a href="/forum/logout" class="logout">Déconnexion</a>
             {{else}}
-            <span>Bonjour invité</span>
-                <a href="/login" class="login">Connexion</a>
-                <a href="/register" class="register">Inscription</a>
+                <span>Bonjour invité</span>
+                <a href="/auth/login" class="login">Connexion</a>
+                <a href="/auth/register" class="register">Inscription</a>
             {{end}}
         </nav>
     </header>
+
+    <!-- Barre de navigation principale -->
     <nav class="main-navbar">
         <ul class="nav-menu">
             <li class="nav-item {{if eq .ActivePage "home"}}active{{end}}">
@@ -34,18 +37,19 @@
             {{end}}
             {{if .IsAuthenticated}}
                 {{if .User.IsAdmin}}
-                <li class="nav-item admin {{if eq .ActivePage "admin"}}active{{end}}">
-                    <a href="/admin">Administration</a>
-                </li>
+                    <li class="nav-item admin {{if eq .ActivePage "admin"}}active{{end}}">
+                        <a href="/admin">Administration</a>
+                    </li>
                 {{end}}
             {{end}}
         </ul>
     </nav>
 
+    <!-- Contenu principal -->
     <main class="container">
         <div class="forum-container">
             <div class="forum-header">
-                <h1>Derniers Posts</h1>
+                <h1>Last Posts</h1>
                 {{if .IsAuthenticated}}
                     <a href="/new-post" class="btn btn-primary">Créer un nouveau post</a>
                 {{end}}
@@ -56,16 +60,17 @@
                     <div class="post-card">
                         <div class="post-header">
                             <h3>{{.Title}}</h3>
-                            <span class="post-author">Par {{.Author}}</span>
+                            <span class="post-author">Par {{.User.UserUsername}}</span>
                         </div>
                         <div class="post-preview">
                             {{.Preview}}
                         </div>
                         <div class="post-footer">
-                            <span>{{.CreatedAt}}</span>
+                            <span>{{.CreatedAtFormatted}}</span>
+
                             <div class="post-actions">
-                                <a href="/post/{{.ID}}" class="btn btn-secondary">Lire plus</a>
-                                <span>💬 {{.CommentCount}}</span>
+                                <a href="/post/{{.PostKey}}" class="btn btn-secondary">Lire plus</a>
+                                <span>💬 {{len .Comments}}</span>
                             </div>
                         </div>
                     </div>
@@ -74,6 +79,7 @@
         </div>
     </main>
 
+    <!-- Footer -->
     <footer class="main-footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -104,7 +110,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2025 Hack Forums. Tous droits réservés.</p>
-            <p>Hack forum by Ynov</p>
+            <p>Hack Forum par Ynov</p>
         </div>
     </footer>
 
