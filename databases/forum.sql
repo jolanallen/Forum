@@ -146,9 +146,7 @@ INSERT INTO users (userUsername, userEmail, userPasswordHash, userProfilePicture
 INSERT INTO sessions (userID, sessionToken, expires_at) VALUES
 (1, 'token123', NOW() + INTERVAL 1 DAY),
 (2, 'token456', NOW() + INTERVAL 1 DAY);
-INSERT INTO sessions (userID, sessionToken, expires_at) VALUES
-(1, 'token123', NOW() + INTERVAL 1 DAY),
-(2, 'token456', NOW() + INTERVAL 1 DAY);
+
 INSERT INTO admins (adminUsername, adminEmail, adminPasswordHash) VALUES
 ('admin1', 'admin1@example.com', 'adminpass1'),
 ('admin2', 'admin2@example.com', 'adminpass2');

@@ -12,16 +12,15 @@
             <a href="/">HACK FORUMS</a>
         </div>
         <nav class="header-nav">
-            {{if .IsAuthenticated}}
-                <span>Bonjour, {{.User.Username}}</span>
+                <span>Bonjour, {{.User.UserUsername}}</span>
                 <a href="/notifications" class="notifications">
                     🔔 {{.User.UnreadNotifications}}
                 </a>
                 <a href="/logout" class="logout">Déconnexion</a>
-            {{else}}
+            
                 <a href="/login" class="login">Connexion</a>
                 <a href="/register" class="register">Inscription</a>
-            {{end}}
+            
         </nav>
     </header>
     <nav class="main-navbar">
