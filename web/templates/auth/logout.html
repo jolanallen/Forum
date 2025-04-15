@@ -1,26 +1,17 @@
-{{define "content"}}
-<div class="logout-container">
-    <div class="logout-content">
-        <h1>Déconnexion</h1>
-        
-        <div class="logout-message">
-            <p>Vous avez été déconnecté avec succès.....</p>
-            <p>Merci de votre visite sur Hack Forums.</p>
-        </div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Déconnexion</title>
+</head>
+<body>
+    <h2>Déconnexion</h2>
 
-        <div class="logout-actions">
-            <a href="/login" class="btn btn-primary">Se reconnecter</a>
-            <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
-        </div>
+    <form action="/auth/logout" method="POST">
+        <p>Voulez-vous vraiment vous déconnecter ?</p>
+        <button type="submit">Se déconnecter</button>
+    </form>
 
-        <div class="security-tips">
-            <h3>Conseils de sécurité</h3>
-            <ul>
-                <li>Assurez-vous de vous être déconnecté sur un ordinateur partagé</li>
-                <li>Utilisez toujours un navigateur sécurisé</li>
-                <li>Ne partagez jamais vos identifiants</li>
-            </ul>
-        </div>
-    </div>
-</div>
-{{end}}
+    <p><a href="/">Retour à l'accueil</a></p>
+</body>
+</html>

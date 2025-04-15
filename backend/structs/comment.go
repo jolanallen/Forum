@@ -14,8 +14,7 @@ type Comment struct {
 	Visible     bool      `gorm:"column:visible"`
 	CommentLike int       `gorm:"column:commentLike;default:0"`
 
-	User User `gorm:"foreignKey:UserID;references:UserID"`
-	Post Post `gorm:"foreignKey:PostID;references:PostID;constraint:OnDelete:CASCADE"`
-	// Ajout de la relation avec "Likes" si nécessaire
-	Likes []Like `gorm:"foreignKey:CommentID;references:CommentID"`
+	User   User   `gorm:"foreignKey:UserID;references:UserID"`
+	Post   Post   `gorm:"foreignKey:PostID;references:PostID;constraint:OnDelete:CASCADE"`
+	Likes  []Like `gorm:"foreignKey:CommentID;references:CommentID"` // Relier les likes pour un commentaire
 }

@@ -19,7 +19,7 @@ func HasUserLikedPost(userID, postID uint64) (bool, error) {
 func AddLikeToPost(userID, postID uint64, post *structs.Post) error {
 	newLike := structs.Like{
 		UserID: userID,
-		PostID: postID,
+		PostID: &postID,
 		Type:   "Post",
 	}
 	if err := db.DB.Create(&newLike).Error; err != nil {
@@ -51,7 +51,7 @@ func HasUserLikedComment(userID, commentID uint64) (bool, error) {
 func AddLikeToComment(userID, commentID uint64, comment *structs.Comment) error {
 	newLike := structs.Like{
 		UserID: userID,
-		PostID: commentID,
+		PostID: &commentID,
 		Type:   "comment",
 	}
 	if err := db.DB.Create(&newLike).Error; err != nil {
@@ -62,10 +62,9 @@ func AddLikeToComment(userID, commentID uint64, comment *structs.Comment) error 
 }
 
 func RemoveLikeFromComment(userID, commentID uint64, comment *structs.Comment) error {
-	if err := db.DB.Where("userID = ? AND postID = ? AND type = ?", userID, commentID, "comment").Delete(&structs.Like{}).Error; err != nil {
+	if err := db.DB.Where("userID = ? AND commentID = ? AND type = ?", userID, commentID, "comment").Delete(&structs.Like{}).Error; err != nil {
 		return err
 	}
-
 	if comment.CommentLike > 0 {
 		comment.CommentLike--
 	}
