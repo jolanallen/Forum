@@ -37,6 +37,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 
+
 func ExtractIDFromURL(path string) (uint64, error) {
 	parts := strings.Split(path, "/")
 	if len(parts) < 3 {
