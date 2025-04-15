@@ -102,7 +102,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 			return
 		}
-		var userProfileImageID *uint64
+		var userProfileImageID uint64
 		userProfileImageID, err = services.HandleImageUpload(r)
 		if err != nil {
 			log.Println("Erreur d'upload d'image, utilisation de l'image par défaut")
@@ -111,12 +111,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 				URL:      "/images/default.png",
 			}
 
-			if err := db.DB.Create(&defaultImage).Error; err != nil {
+			if err := db.DB.Create(defaultImage).Error; err != nil {
 				log.Println("Erreur lors de l'ajout de l'image par défaut:", err)
 				http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 				return
 			}
-			userProfileImageID = &defaultImage.ImageID
+			userProfileImageID = defaultImage.ImageID
 		}
 		newUser := structs.User{
 			UserUsername:       username,

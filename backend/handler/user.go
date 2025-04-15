@@ -4,6 +4,7 @@ import (
 	"Forum/backend/db"
 	"Forum/backend/services"
 	"Forum/backend/structs"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -36,26 +37,28 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Handle image upload
 	imageID, err := services.HandleImageUpload(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// Create the post
 	post := structs.Post{
 		PostKey:     postKey,
 		PostComment: content,
 		UserID:      userID,
-		ImageID:     imageID,
+		ImageID:     imageID, // Assure que l'imageID est valide
 		CategoryID:  categoryID,
 	}
 
 	if err := db.DB.Create(&post).Error; err != nil {
-		http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Erreur lors de la création du post : %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "BoyWithUke_Prairies", http.StatusSeeOther)
+	http.Redirect(w, r, "/post-created", http.StatusSeeOther) // Rediriger vers une URL de confirmation
 }
 
 func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +179,7 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Erreur de validation de l'image : "+err.Error(), http.StatusBadRequest)
 				return
 			}
-			user.UserProfilePicture = &imageID.ImageID
+			user.UserProfilePicture = imageID.ImageID
 		}
 
 		if err := UpdateUser(user); err != nil {

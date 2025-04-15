@@ -1,7 +1,7 @@
 package structs
 
 type Category struct {
-	CategoriesID          uint64 `gorm:"column:categoriesID;primaryKey;autoIncrement"`
-	CategoriesName        string `gorm:"column:categoriesName;unique;size:255"`
-	CategoriesDescription string `gorm:"column:categoriesDescription;type:text"`
+	CategoryID          uint64 `gorm:"column:categoryID;primaryKey;autoIncrement"`
+	CategoryName        string `gorm:"column:categoryName;unique;size:255"`
+	CategoryDescription string `gorm:"column:categoryDescription;type:text"`
 }

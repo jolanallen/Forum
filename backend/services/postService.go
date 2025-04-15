@@ -55,21 +55,21 @@ func ParseFormValues(r *http.Request) (string, uint64, error) {
 	return content, categoryID, nil
 }
 
-func HandleImageUpload(r *http.Request) (*uint64, error) {
-	file, header, err := r.FormFile("image")
-	if err != nil {
-		return nil, nil
-	}
-	defer file.Close()
+func HandleImageUpload(r *http.Request) (uint64, error) {
+    file, header, err := r.FormFile("image")
+    if err != nil {
+        return 0, fmt.Errorf("failed to retrieve file: %v", err)
+    }
+    defer file.Close()
 
-	image, err := ValidateImage(file, header)
-	if err != nil {
-		return nil, err
-	}
+    image, err := ValidateImage(file, header)
+    if err != nil {
+        return 0, fmt.Errorf("invalid image: %v", err)
+    }
 
-	if err := db.DB.Create(image).Error; err != nil {
-		return nil, fmt.Errorf("Erreur DB image")
-	}
+    if err := db.DB.Create(image).Error; err != nil {
+        return 0, fmt.Errorf("database error during image upload: %v", err)
+    }
 
-	return &image.ImageID, nil
+    return image.ImageID, nil
 }
