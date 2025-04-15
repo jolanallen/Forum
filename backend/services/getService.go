@@ -31,7 +31,7 @@ func GetUserByID(userID uint64) (*structs.User, error) {
 	}
 	return &user, nil
 }
-
+//donne la structure de tout les poste en fonction de la categorie
 func GetPostsByCategory(category string) ([]structs.Post, error) {
 	var posts []structs.Post
 	err := db.DB.Where("categoriesName = ?", category).Find(&posts).Error
