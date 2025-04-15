@@ -20,31 +20,22 @@ import (
 
 var F = &structs.Forum{}
 
-func lower(s string) string {
-	return strings.ToLower(s)
-}
-
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+    templatePath := filepath.Join("web/templates", tmpl)
+    t, err := template.ParseFiles(templatePath)
+    if err != nil {
+        http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
+        log.Println("Erreur parsing template:", err)
+        return
+    }
 
-	funcMap := template.FuncMap{
-		"lower": lower,
-	}
-
-	templatePath := filepath.Join("web/templates", tmpl)
-
-	t, err := template.New(tmpl).Funcs(funcMap).ParseFiles(templatePath)
-	if err != nil {
-		http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
-		log.Println("Erreur parsing template:", err)
-		return
-	}
-
-	err = t.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Erreur lors de l'affichage", http.StatusInternalServerError)
-		log.Println("Erreur exécution template:", err)
-	}
+    err = t.Execute(w, data)
+    if err != nil {
+        http.Error(w, "Erreur lors de l'affichage", http.StatusInternalServerError)
+        log.Println("Erreur exécution template:", err)
+    }
 }
+
 
 func ExtractIDFromURL(path string) (uint64, error) {
 	parts := strings.Split(path, "/")

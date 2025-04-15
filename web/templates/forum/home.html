@@ -19,7 +19,7 @@
             <span>Bonjour invité</span>
                 <a href="/login" class="login">Connexion</a>
                 <a href="/register" class="register">Inscription</a>
-            
+            {{end}}
         </nav>
     </header>
     <nav class="main-navbar">
@@ -29,7 +29,7 @@
             </li>
             {{range .Categories}}
                 <li class="nav-item {{if eq .ActivePage .Name}}active{{end}}">
-                    <a href="/forum/{{.Name | lower}}">{{.Name}}</a>
+                    <a href="/forum/{{.Name}}">{{.Name}}</a>
                 </li>
             {{end}}
             {{if .IsAuthenticated}}
