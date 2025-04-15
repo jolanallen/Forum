@@ -16,4 +16,6 @@ type Comment struct {
 
 	User User `gorm:"foreignKey:UserID;references:UserID"`
 	Post Post `gorm:"foreignKey:PostID;references:PostID;constraint:OnDelete:CASCADE"`
+	// Ajout de la relation avec "Likes" si nécessaire
+	Likes []Like `gorm:"foreignKey:CommentID;references:CommentID"`
 }

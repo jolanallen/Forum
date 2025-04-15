@@ -34,12 +34,22 @@ func GetUserByID(userID uint64) (*structs.User, error) {
 //donne la structure de tout les poste en fonction de la categorie
 func GetPostsByCategory(category string) ([]structs.Post, error) {
 	var posts []structs.Post
-	err := db.DB.Where("categoriesName = ?", category).Find(&posts).Error
+
+	subQuery := db.DB.                        //// sous-requêtes qui permet de récupérer d'abord L'Id de la catégorie 
+		Table("categories").
+		Select("categoriesID").
+		Where("LOWER(categoriesName) = LOWER(?)", category)
+
+	err := db.DB.                            /// récupére tout les post de la catégoroie correspondant a l'ID récupérer
+		Where("categoriesID = (?)", subQuery).
+		Find(&posts).Error
+
 	if err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
+
 
 func GetCommentByID(commentID uint64) (structs.Comment, error) {
 	var comment structs.Comment

@@ -3,7 +3,7 @@ package structs
 import (
 	"time"
 )
-//on va reprendre la façon de faire du post image, ce sera plus rapide
+
 type Post struct {
 	PostID      uint64    `gorm:"primaryKey;autoIncrement;column:postID" json:"postID"`
 	CategoryID  uint64    `gorm:"column:categoriesID" json:"categoryID"`
