@@ -45,7 +45,7 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	var admin structs.Admin
 
 	// Récupérer l'admin à partir de la base de données
-	row := db.DB.QueryRow("SELECT admin_id FROM admins WHERE admin_id = $1", adminID)
+	row := db.DB.QueryRow("SELECT adminID FROM admins WHERE adminID = ?", adminID)
 	if err := row.Scan(&admin.AdminID); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Accès interdit", http.StatusForbidden)
@@ -68,7 +68,7 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	// Vérifier si l'utilisateur existe
 	var user structs.User
-	row = db.DB.QueryRow("SELECT user_id, user_email FROM users WHERE user_id = $1", userIDToDelete)
+	row = db.DB.QueryRow("SELECT userID, userEmail FROM users WHERE userID = ?", userIDToDelete)
 	if err := row.Scan(&user.UserID, &user.UserEmail); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Utilisateur introuvable", http.StatusNotFound)
@@ -79,7 +79,7 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Supprimer l'utilisateur de la base de données
-	_, err = db.DB.Exec("DELETE FROM users WHERE user_id = $1", userIDToDelete)
+	_, err = db.DB.Exec("DELETE FROM users WHERE userID = ?", userIDToDelete)
 	if err != nil {
 		http.Error(w, "Erreur lors de la suppression de l'utilisateur", http.StatusInternalServerError)
 		return
@@ -92,7 +92,7 @@ func AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	adminID := r.Context().Value("adminID")
 	var admin structs.Admin
-	row := db.DB.QueryRow("SELECT admin_id FROM admins WHERE admin_id = $1", adminID)
+	row := db.DB.QueryRow("SELECT adminID FROM admins WHERE adminID = ?", adminID)
 	if err := row.Scan(&admin.AdminID); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Accès interdit", http.StatusForbidden)
@@ -115,8 +115,8 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	// Vérifier si le commentaire existe
 	var comment structs.Comment
-	row = db.DB.QueryRow("SELECT comment_id, comment_text FROM comments WHERE comment_id = $1", commentID)
-	if err := row.Scan(&comment.CommentID, &comment.CommentText); err != nil {
+	row = db.DB.QueryRow("SELECT commentID, content FROM comments WHERE commentID = ?", commentID)
+	if err := row.Scan(&comment.CommentID, &comment.CommentContent); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Commentaire introuvable", http.StatusNotFound)
 		} else {
@@ -126,7 +126,7 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Supprimer le commentaire de la base de données
-	_, err = db.DB.Exec("DELETE FROM comments WHERE comment_id = $1", commentID)
+	_, err = db.DB.Exec("DELETE FROM comments WHERE commentID = ?", commentID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la suppression du commentaire", http.StatusInternalServerError)
 		return
@@ -135,11 +135,12 @@ func AdminDeleteComment(w http.ResponseWriter, r *http.Request) {
 	// Rediriger vers le dashboard
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
-
 func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 	adminID := r.Context().Value("adminID")
 	var admin structs.Admin
-	row := db.DB.QueryRow("SELECT admin_id FROM admins WHERE admin_id = $1", adminID)
+
+	// Vérifier l'existence de l'admin
+	row := db.DB.QueryRow("SELECT adminID FROM admins WHERE adminID = ?", adminID)
 	if err := row.Scan(&admin.AdminID); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Accès interdit", http.StatusForbidden)
@@ -162,8 +163,8 @@ func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 
 	// Vérifier si le post existe
 	var post structs.Post
-	row = db.DB.QueryRow("SELECT post_id, post_title FROM posts WHERE post_id = $1", postID)
-	if err := row.Scan(&post.PostID, &post.PostTitle); err != nil {
+	row = db.DB.QueryRow("SELECT postID FROM posts WHERE postID = ?", postID)
+	if err := row.Scan(&post.PostID); err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Post introuvable", http.StatusNotFound)
 		} else {
@@ -172,13 +173,13 @@ func AdminDeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Supprimer le post de la base de données
-	_, err = db.DB.Exec("DELETE FROM posts WHERE post_id = $1", postID)
+	// Supprimer le post
+	_, err = db.DB.Exec("DELETE FROM posts WHERE postID = ?", postID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la suppression du post", http.StatusInternalServerError)
 		return
 	}
 
-	// Rediriger vers le dashboard
+	// Rediriger
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }

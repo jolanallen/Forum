@@ -19,7 +19,7 @@ func Authentication(next http.Handler) http.Handler {
 
 		// Vérification de la session utilisateur
 		var userSession structs.SessionUser
-		query := "SELECT userID, expiresAt FROM session_users WHERE sessionToken = ?"
+		query := "SELECT userID, expiresAt FROM sessionsUsers WHERE sessionToken = ?"
 		err = db.DB.QueryRow(query, cookie.Value).Scan(&userSession.UUserID, &userSession.UExpiresAt)
 		if err != nil || userSession.UExpiresAt.Before(time.Now()) {
 			// Vérification de la session admin

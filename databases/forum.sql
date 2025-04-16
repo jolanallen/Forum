@@ -66,7 +66,7 @@ CREATE TABLE `admins` (
 CREATE TABLE `guests` (
     `guestID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `last_visited_at` DATETIME DEFAULT NULL,
+    `lastVisitedAt` DATETIME DEFAULT NULL,
     PRIMARY KEY (`guestID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -130,6 +130,7 @@ CREATE TABLE `comments` (
     `postID` BIGINT UNSIGNED NOT NULL,
     `status` ENUM('approuvé', 'en attente', 'rejeté') DEFAULT 'en attente',
     `visible` BOOLEAN DEFAULT TRUE,
+    `commentLike` BIGINT DEFAULT 0
     PRIMARY KEY (`commentID`),
     FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
     FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`) ON DELETE CASCADE
