@@ -1,70 +1,111 @@
-{{define "content"}}
-<div class="user-settings-container">
-    <h1>Paramètres du compte</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le profil</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <!-- En-tête -->
+    <header class="main-header">
+        <div class="logo">
+            <h1><a href="/forum">HACK FORUMS</a></h1>
+        </div>
+        <nav class="header-nav">
+            {{if .IsAuthenticated}}
+                <span>Bonjour, {{.UserUsername}}</span>
+                <a href="/forum/logout" class="logout">Déconnexion</a>
+            {{else}}
+                <span>Bonjour invité</span>
+                <a href="/auth/login" class="login">Connexion</a>
+                <a href="/auth/register" class="register">Inscription</a>
+            {{end}}
+        </nav>
+    </header>
 
-    <section class="settings-section">
-        <h2>Informations personnelles</h2>
-        <form action="/user/update-profile" method="POST">
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" id="username" name="username" value="{{.User.Username}}" required>
+    <!-- Barre de navigation principale -->
+    <nav class="main-navbar">
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/">Accueil</a></li>
+            <li class="nav-item"><a href="/forum/hack">Hack</a></li>
+            <li class="nav-item"><a href="/forum/prog">Programmation</a></li>
+            <li class="nav-item"><a href="/forum/news">News</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="container">
+        <div class="user-settings-container">
+            <h1>Paramètres du compte</h1>
+
+            <form action="/user/profile/edit" method="POST" enctype="multipart/form-data" class="settings-form">
+                <section class="settings-section">
+                    <h2>Informations personnelles</h2>
+                    <div class="form-group">
+                        <label for="userUsername">Nom d'utilisateur</label>
+                        <input type="text" id="userUsername" name="userUsername" value="{{.UserUsername}}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail">Email</label>
+                        <input type="email" id="userEmail" name="userEmail" value="{{.UserEmail}}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userProfilePicture">Photo de profil</label>
+                        <input type="file" id="userProfilePicture" name="userProfilePicture">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h2>Mot de passe</h2>
+                    <div class="form-group">
+                        <label for="userPassword">Nouveau mot de passe</label>
+                        <input type="password" id="userPassword" name="userPassword">
+                    </div>
+                </section>
+
+                <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/forum/hack">Hack</a></li>
+                    <li><a href="/forum/prog">Programmation</a></li>
+                    <li><a href="/forum/news">News</a></li>
+                </ul>
             </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="{{.User.Email}}" required>
+            <div class="footer-section">
+                <h4>Communauté</h4>
+                <ul>
+                    <li><a href="/users">Utilisateurs</a></li>
+                    <li><a href="/stats">Statistiques</a></li>
+                    <li><a href="/rules">Règles du forum</a></li>
+                </ul>
             </div>
-
-            <button type="submit" class="btn btn-primary">Mettre à jour</button>
-        </form>
-    </section>
-
-    <section class="settings-section">
-        <h2>Changer de mot de passe</h2>
-        <form action="/user/change-password" method="POST">
-            <div class="form-group">
-                <label for="current-password">Mot de passe actuel</label>
-                <input type="password" id="current-password" name="current_password" required>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="/privacy">Politique de confidentialité</a></li>
+                </ul>
             </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hack Forums. Tous droits réservés.</p>
+            <p>Hack Forum par Ynov</p>
+        </div>
+    </footer>
 
-            <div class="form-group">
-                <label for="new-password">Nouveau mot de passe</label>
-                <input type="password" id="new-password" name="new_password" required>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm-password">Confirmer le nouveau mot de passe</label>
-                <input type="password" id="confirm-password" name="confirm_password" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Changer le mot de passe</button>
-        </form>
-    </section>
-
-    <section class="settings-section">
-        <h2>Notifications</h2>
-        <form action="/user/update-notifications" method="POST">
-            <div class="form-group checkbox">
-                <input type="checkbox" id="email-notif" name="email_notifications" 
-                       {{if .User.EmailNotifications}}checked{{end}}>
-                <label for="email-notif">Recevoir des notifications par email</label>
-            </div>
-
-            <div class="form-group checkbox">
-                <input type="checkbox" id="site-notif" name="site_notifications" 
-                       {{if .User.SiteNotifications}}checked{{end}}>
-                <label for="site-notif">Notifications sur le site</label>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Enregistrer les préférences</button>
-        </form>
-    </section>
-
-    <section class="settings-section danger-zone">
-        <h2>Zone de danger</h2>
-        <button class="btn btn-danger" data-modal="delete-account">
-            Supprimer mon compte
-        </button>
-    </section>
-</div>
-{{end}}
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

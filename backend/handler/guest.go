@@ -5,22 +5,22 @@ import (
 	"Forum/backend/services"
 	"Forum/backend/structs"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 )
 
+// handleError is a helper function to log and return HTTP errors
 func handleError(w http.ResponseWriter, err error, message string) {
 	log.Println(message, err)
 	http.Error(w, message, http.StatusInternalServerError)
 }
 
+// GuestHome handles the rendering of the home page for both authenticated and unauthenticated users
 func GuestHome(w http.ResponseWriter, r *http.Request) {
 	userID := services.GetUserIDFromSession(r)
 	isAuthenticated := userID != 0
-	fmt.Println(services.HashPassword("hashed_password_1"))
 
-	// Récupérer les posts avec les commentaires, leurs auteurs et leurs likes (SQL pur)
+	// Fetch all posts with their authors using raw SQL
 	var posts []structs.Post
 	rows, err := db.DB.Query(`
 		SELECT posts.postID, posts.categoryID, posts.postKey, posts.imageID, posts.postComment, posts.postLike, posts.createdAt, 
@@ -29,29 +29,27 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		JOIN users ON posts.userID = users.userID
 	`)
 	if err != nil {
-		handleError(w, err, "Erreur lors de la récupération des posts")
+		handleError(w, err, "Error while fetching posts")
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var post structs.Post
-		var username string // Variable temporaire pour stocker le nom d'utilisateur
-		// Récupérer toutes les colonnes et inclure le nom d'utilisateur
+		var username string
 		if err := rows.Scan(&post.PostID, &post.CategoryID, &post.PostKey, &post.ImageID, &post.PostComment, &post.PostLike, &post.PostCreatedAt, &username); err != nil {
-			handleError(w, err, "Erreur lors de la récupération des données de post")
+			handleError(w, err, "Error while scanning post data")
 			return
 		}
-		// Associer le nom d'utilisateur récupéré à un champ d'un autre objet, si nécessaire
-		post.UserUsername = username // Pas besoin de l'ajouter à la structure, juste l'utiliser localement
+		post.UserUsername = username
 		posts = append(posts, post)
 	}
 
-	// Récupérer les catégories (SQL pur)
+	// Fetch all categories
 	var categories []structs.Category
 	rows, err = db.DB.Query("SELECT categoryID, categoryName FROM categories")
 	if err != nil {
-		handleError(w, err, "Erreur lors de la récupération des catégories")
+		handleError(w, err, "Error while fetching categories")
 		return
 	}
 	defer rows.Close()
@@ -59,27 +57,27 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var category structs.Category
 		if err := rows.Scan(&category.CategoryID, &category.CategoryName); err != nil {
-			handleError(w, err, "Erreur lors de la récupération des catégories")
+			handleError(w, err, "Error while scanning category data")
 			return
 		}
 		categories = append(categories, category)
 	}
 
-	// Récupérer l'utilisateur connecté si authentifié (SQL pur)
+	// If the user is authenticated, retrieve their user data
 	var user structs.User
 	if isAuthenticated {
 		row := db.DB.QueryRow("SELECT userID, userUsername FROM users WHERE userID = $1", userID)
 		if err := row.Scan(&user.UserID, &user.UserUsername); err != nil {
 			if err == sql.ErrNoRows {
-				handleError(w, err, "Utilisateur non trouvé")
+				handleError(w, err, "User not found")
 			} else {
-				handleError(w, err, "Erreur lors de la récupération de l'utilisateur")
+				handleError(w, err, "Error while fetching user")
 			}
 			return
 		}
 	}
 
-	// Ajouter le champ ActivePage ici pour indiquer la page active
+	// Render the home page template with posts, categories, and user info
 	services.RenderTemplate(w, "forum/home.html", struct {
 		IsAuthenticated bool
 		Posts           []structs.Post
@@ -95,41 +93,48 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CategoryHack handles displaying posts from the "hack" category
 func CategoryHack(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("hack")
 	if err != nil {
-		handleError(w, err, "Erreur lors de la récupération des posts Hack")
+		handleError(w, err, "Error while fetching Hack posts")
 		return
 	}
-	services.RenderTemplate(w, "guest/catégorie_hack.html", posts)
+	services.RenderTemplate(w, "/categories_post.html", posts)
 }
 
+// CategoryProg handles displaying posts from the "prog" category
 func CategoryProg(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("prog")
 	if err != nil {
-		handleError(w, err, "Erreur lors de la récupération des posts Prog")
+		handleError(w, err, "Error while fetching Prog posts")
 		return
 	}
-	services.RenderTemplate(w, "guest/catégorie_prog.html", posts)
+	services.RenderTemplate(w, "/categories_post.html", posts)
 }
 
+// CategoryNews handles displaying posts from the "news" category
 func CategoryNews(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("news")
 	if err != nil {
-		handleError(w, err, "Erreur lors de la récupération des posts News")
+		handleError(w, err, "Error while fetching News posts")
 		return
 	}
-	services.RenderTemplate(w, "guest/catégorie_news.html", posts)
+	services.RenderTemplate(w, "/categories_post.html", posts)
 }
+
+// SearchPseudo handles searching for posts by keyword or username
 func SearchPseudo(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("query")
 	posts, err := services.SearchPosts(searchQuery)
 	if err != nil {
-		handleError(w, err, "Erreur lors de la recherche de posts")
+		handleError(w, err, "Error during post search")
 		return
 	}
-	services.RenderTemplate(w, "guest/search.html", posts)
+	services.RenderTemplate(w, "/search.html", posts)
 }
+
+// AboutForum renders the static "About" page
 func AboutForum(w http.ResponseWriter, r *http.Request) {
-	services.RenderTemplate(w, "guest/about.html", nil)
+	services.RenderTemplate(w, "/about.html", nil)
 }
