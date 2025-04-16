@@ -57,7 +57,7 @@ func GenerateToken() string {
 	return hex.EncodeToString(b)
 }
 
-func CreateUserSession(userID uint64) (string, error) {
+func CreateUserSession(userID int64) (string, error) {
 	sessionToken := GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
 

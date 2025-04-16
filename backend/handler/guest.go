@@ -68,7 +68,7 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 	// Récupérer l'utilisateur connecté si authentifié (SQL pur)
 	var user structs.User
 	if isAuthenticated {
-		row := db.DB.QueryRow("SELECT userID, username FROM users WHERE userID = $1", userID)
+		row := db.DB.QueryRow("SELECT userID, userUsername FROM users WHERE userID = $1", userID)
 		if err := row.Scan(&user.UserID, &user.UserUsername); err != nil {
 			if err == sql.ErrNoRows {
 				handleError(w, err, "Utilisateur non trouvé")

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"database/sql"
 )
 
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -78,12 +78,6 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comment, err := services.GetCommentByID(commentID)
-	if err != nil {
-		http.Error(w, "Commentaire introuvable", http.StatusNotFound)
-		return
-	}
-
 	hasLiked, err := services.HasUserLikedComment(userID, commentID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la vérification du like", http.StatusInternalServerError)
@@ -92,7 +86,7 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 
 	if hasLiked {
 		// Retirer le like
-		query := "DELETE FROM comment_likes WHERE userID = ? AND commentID = ?"
+		query := "DELETE FROM commentsLikes WHERE userID = ? AND commentID = ?"
 		_, err := db.DB.Exec(query, userID, commentID)
 		if err != nil {
 			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
@@ -100,7 +94,7 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Ajouter un like
-		query := "INSERT INTO comment_likes (userID, commentID) VALUES (?, ?)"
+		query := "INSERT INTO commentsLikes (userID, commentID) VALUES (?, ?)"
 		_, err := db.DB.Exec(query, userID, commentID)
 		if err != nil {
 			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
@@ -110,6 +104,8 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/forum", http.StatusSeeOther)
 }
+
+
 
 func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
@@ -122,12 +118,6 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := services.GetPostByID(postID)
-	if err != nil {
-		http.Error(w, "Post introuvable", http.StatusNotFound)
-		return
-	}
-
 	hasLiked, err := services.HasUserLikedPost(userID, postID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la vérification du like", http.StatusInternalServerError)
@@ -136,16 +126,16 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 
 	if hasLiked {
 		// Retirer le like
-		query := "DELETE FROM post_likes WHERE userID = ? AND postID = ?"
-		_, err := db.DB.Exec(query, userID, postID)
+		query := "DELETE FROM postsLikes WHERE userID = ? AND postID = ?"
+		_, err = db.DB.Exec(query, userID, postID)  // Utilisation de `=` pour réutiliser err
 		if err != nil {
 			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
 			return
 		}
 	} else {
 		// Ajouter un like
-		query := "INSERT INTO post_likes (userID, postID) VALUES (?, ?)"
-		_, err := db.DB.Exec(query, userID, postID)
+		query := "INSERT INTO postsLikes (userID, postID) VALUES (?, ?)"
+		_, err = db.DB.Exec(query, userID, postID)  // Utilisation de `=` pour réutiliser err
 		if err != nil {
 			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
 			return
@@ -199,7 +189,7 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Erreur de validation de l'image : "+err.Error(), http.StatusBadRequest)
 				return
 			}
-			user.UserProfilePicture = image.ImageID
+			user.UserProfilePicture = int64(image.ImageID)
 		}
 
 		query := "UPDATE users SET userUsername = ?, userEmail = ?, userPasswordHash = ?, userProfilePicture = ? WHERE userID = ?"

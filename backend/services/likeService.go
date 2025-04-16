@@ -7,7 +7,7 @@ import (
 
 func HasUserLikedPost(userID, postID uint64) (bool, error) {
 	var count int
-	query := `SELECT COUNT(*) FROM post_likes WHERE userID = ? AND postID = ?`
+	query := `SELECT COUNT(*) FROM postsLikes WHERE userID = ? AND postID = ?`
 	err := db.DB.QueryRow(query, userID, postID).Scan(&count)
 	if err != nil {
 		return false, err
@@ -16,7 +16,7 @@ func HasUserLikedPost(userID, postID uint64) (bool, error) {
 }
 
 func AddLikeToPost(userID, postID uint64) error {
-	insert := `INSERT INTO post_likes (userID, postID) VALUES (?, ?)`
+	insert := `INSERT INTO postsLikes (userID, postID) VALUES (?, ?)`
 	_, err := db.DB.Exec(insert, userID, postID)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func AddLikeToPost(userID, postID uint64) error {
 }
 
 func RemoveLikeFromPost(userID, postID uint64) error {
-	delete := `DELETE FROM post_likes WHERE userID = ? AND postID = ?`
+	delete := `DELETE FROM postLikes WHERE userID = ? AND postID = ?`
 	res, err := db.DB.Exec(delete, userID, postID)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func RemoveLikeFromPost(userID, postID uint64) error {
 
 func HasUserLikedComment(userID, commentID uint64) (bool, error) {
 	var count int
-	query := `SELECT COUNT(*) FROM comment_likes WHERE userID = ? AND commentID = ?`
+	query := `SELECT COUNT(*) FROM commentsLikes WHERE userID = ? AND commentID = ?`
 	err := db.DB.QueryRow(query, userID, commentID).Scan(&count)
 	if err != nil {
 		return false, err
@@ -57,7 +57,7 @@ func HasUserLikedComment(userID, commentID uint64) (bool, error) {
 }
 
 func AddLikeToComment(userID, commentID uint64) error {
-	insert := `INSERT INTO comment_likes (userID, commentID) VALUES (?, ?)`
+	insert := `INSERT INTO commentsLikes (userID, commentID) VALUES (?, ?)`
 	_, err := db.DB.Exec(insert, userID, commentID)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func AddLikeToComment(userID, commentID uint64) error {
 }
 
 func RemoveLikeFromComment(userID, commentID uint64) error {
-	delete := `DELETE FROM comment_likes WHERE userID = ? AND commentID = ?`
+	delete := `DELETE FROM commentLikes WHERE userID = ? AND commentID = ?`
 	res, err := db.DB.Exec(delete, userID, commentID)
 	if err != nil {
 		return err

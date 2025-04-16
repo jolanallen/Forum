@@ -35,7 +35,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		// Vérifier si l'email existe dans la base de données
 		var user structs.User
-		row := db.DB.QueryRow("SELECT id, user_password_hash FROM users WHERE user_email = $1", email)
+		row := db.DB.QueryRow("SELECT userID, userPasswordHash FROM users WHERE userEmail = $1", email)
 		if err := row.Scan(&user.UserID, &user.UserPasswordHash); err != nil {
 			if err == sql.ErrNoRows {
 				http.Error(w, "Email non trouvé", http.StatusUnauthorized)
@@ -102,7 +102,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		var existingUser struct {
 			UserEmail string
 		}
-		row := db.DB.QueryRow("SELECT user_email FROM users WHERE user_email = $1", email)
+		row := db.DB.QueryRow("SELECT userEmail FROM users WHERE userEmail = $1", email)
 		if err := row.Scan(&existingUser.UserEmail); err != nil {
 			if err != sql.ErrNoRows {
 				http.Error(w, "Erreur lors de la vérification de l'email", http.StatusInternalServerError)
@@ -133,7 +133,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 			// Insérer l'image par défaut
 			if err := db.DB.QueryRow(`
-				INSERT INTO images (filename, url) VALUES ($1, $2) RETURNING image_id`,
+				INSERT INTO images (filename, url) VALUES ($1, $2) RETURNING imageID`,
 				defaultImage.Filename, defaultImage.URL).Scan(&userProfileImageID); err != nil {
 				log.Println("Erreur lors de l'ajout de l'image par défaut:", err)
 				http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
@@ -143,7 +143,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 		// Création d'un nouvel utilisateur
 		_, err = db.DB.Exec(`
-			INSERT INTO users (user_username, user_email, user_password_hash, user_profile_picture)
+			INSERT INTO users (userUsername, userEmail, userPasswordHash, userProfilePicture)
 			VALUES ($1, $2, $3, $4)`,
 			username, email, hashedPassword, userProfileImageID)
 		if err != nil {
@@ -192,11 +192,11 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 
 	// Vérifier si l'utilisateur existe déjà
 	var user structs.User
-	row := db.DB.QueryRow("SELECT id, user_username FROM users WHERE user_email = $1", userInfo.Email)
+	row := db.DB.QueryRow("SELECT userID, userUsername FROM users WHERE userEmail = $1", userInfo.Email)
 	if err := row.Scan(&user.UserID, &user.UserUsername); err != nil {
 		// Si l'utilisateur n'existe pas, créer un nouvel utilisateur
 		_, err := db.DB.Exec(`
-			INSERT INTO users (user_username, user_email) 
+			INSERT INTO users (userUsername, userEmail) 
 			VALUES ($1, $2)`,
 			userInfo.Name, userInfo.Email)
 		if err != nil {
@@ -205,7 +205,7 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Récupérer l'utilisateur nouvellement créé
-		row = db.DB.QueryRow("SELECT id FROM users WHERE user_email = $1", userInfo.Email)
+		row = db.DB.QueryRow("SELECT userID FROM users WHERE userEmail = $1", userInfo.Email)
 		if err := row.Scan(&user.UserID); err != nil {
 			http.Error(w, "Erreur lors de la récupération de l'utilisateur", http.StatusInternalServerError)
 			return
