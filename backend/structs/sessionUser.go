@@ -2,12 +2,24 @@ package structs
 
 import "time"
 
+// SessionUser represents a user session in the system.
+// It stores information about the session token and its related details for a registered user.
 type SessionUser struct {
-	USessionID    uint64    // sessionID
-	UUserID       uint64    // userID (clé étrangère vers users.userID)
-	USessionToken string    // sessionToken
-	UExpiresAt    time.Time // expires_at
-	UCreatedAt    time.Time // created_at
-
-	// On vire le lien vers User pour rester simple en SQL pur
+	// USessionID is the unique identifier for the user session.
+	USessionID uint64
+	
+	// UUserID is the ID of the user associated with this session.
+	// It is a foreign key linking to the users table.
+	UUserID uint64
+	
+	// USessionToken is the token generated for the user's session.
+	USessionToken string
+	
+	// UExpiresAt is the timestamp indicating when the user session will expire.
+	UExpiresAt time.Time
+	
+	// UCreatedAt is the timestamp indicating when the user session was created.
+	UCreatedAt time.Time
+	
+	// The relationship with User is removed for native SQL handling.
 }
