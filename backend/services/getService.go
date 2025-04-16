@@ -41,8 +41,21 @@ func GetUserIDFromSession(r *http.Request) uint64 {
 	if err != nil {
 		return 0
 	}
+
 	var userID uint64
-	fmt.Sscanf(cookie.Value, "%d", &userID)
+	sessionType := cookie.Value[:5]
+
+	switch sessionType {
+	case "user_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	case "admin_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	case "guest_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	default:
+		return 0
+	}
+
 	return userID
 }
 
@@ -134,6 +147,7 @@ func GetCommentByID(commentID uint64) (structs.Comment, error) {
 
 // Récupère un utilisateur par son email
 func GetUserByEmail(email string) (*structs.User, error) {
+	fmt.Println(email)
 	var user structs.User
 	query := `
 		SELECT userID, userEmail, userUsername, userPasswordHash, userProfilePicture, createdAt 
@@ -154,6 +168,7 @@ func GetUserByEmail(email string) (*structs.User, error) {
 		}
 		return nil, err
 	}
+	fmt.Println("blablaba")
 	return &user, nil
 }
 

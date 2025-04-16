@@ -197,8 +197,8 @@ INSERT INTO users (userUsername, userEmail, userPasswordHash, userProfilePicture
 
 -- Catégories
 INSERT INTO categories (categoryName, categoryDescription) VALUES
-   ('Hack', 'Tout sur la technologie'),
-   ('Programmation', 'Art créatif et design');
+   ('hack', 'Tout sur la technologie'),
+   ('prog', 'Art créatif et design');
 
 -- Administrateurs
 INSERT INTO admins (adminUsername, adminEmail, adminPasswordHash) VALUES
