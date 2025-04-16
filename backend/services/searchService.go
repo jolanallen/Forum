@@ -55,7 +55,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SearchPosts(query string) ([]structs.Post, error) {
-	rows, err := db.DB.Query("SELECT postID, postComment, userID, postKey, imageID, postLike, categoryID, created_at FROM posts WHERE postComment LIKE ?", "%"+query+"%")
+	rows, err := db.DB.Query("SELECT postID, postComment, userID, postKey, imageID, postLike, categoryID, createdAt FROM posts WHERE postComment LIKE ?", "%"+query+"%")
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func FilterPostsByCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postRows, err := db.DB.Query(`SELECT postID, postComment, userID, postKey, imageID, postLike, categoryID, created_at FROM posts WHERE categoryID = ?`, categoryID)
+	postRows, err := db.DB.Query(`SELECT postID, postComment, userID, postKey, imageID, postLike, categoryID, createdAt FROM posts WHERE categoryID = ?`, categoryID)
 	if err != nil {
 		http.Error(w, "Erreur de serveur", http.StatusInternalServerError)
 		log.Println("Erreur récupération des posts:", err)

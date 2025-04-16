@@ -24,12 +24,12 @@ func Authentication(next http.Handler) http.Handler {
 		if err != nil || userSession.UExpiresAt.Before(time.Now()) {
 			// Vérification de la session admin
 			var adminSession structs.SessionAdmin
-			query := "SELECT adminID, expiresAt FROM session_admins WHERE sessionToken = ?"
+			query := "SELECT adminID, expiresAt FROM sessionsAdmins WHERE sessionToken = ?"
 			err = db.DB.QueryRow(query, cookie.Value).Scan(&adminSession.AAdminID, &adminSession.AExpiresAt)
 			if err != nil || adminSession.AExpiresAt.Before(time.Now()) {
 				// Vérification de la session invité
 				var guestSession structs.SessionGuest
-				query := "SELECT guestID, expiresAt FROM session_guests WHERE sessionToken = ?"
+				query := "SELECT guestID, expiresAt FROM sessionsGuests WHERE sessionToken = ?"
 				err = db.DB.QueryRow(query, cookie.Value).Scan(&guestSession.GGuestID, &guestSession.GExpiresAt)
 				if err != nil || guestSession.GExpiresAt.Before(time.Now()) {
 					http.Redirect(w, r, "/login", http.StatusSeeOther)
