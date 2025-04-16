@@ -4,54 +4,79 @@ import (
 	"Forum/backend/db"
 	"Forum/backend/services"
 	"Forum/backend/structs"
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 )
 
-// Fonction utilitaire pour gérer les erreurs
 func handleError(w http.ResponseWriter, err error, message string) {
 	log.Println(message, err)
 	http.Error(w, message, http.StatusInternalServerError)
 }
 
-
 func GuestHome(w http.ResponseWriter, r *http.Request) {
 	userID := services.GetUserIDFromSession(r)
 	isAuthenticated := userID != 0
+	fmt.Println(services.HashPassword("hashed_password_1"))
 
-	// Récupérer les posts avec les commentaires, leurs auteurs et leurs likes
+	// Récupérer les posts avec les commentaires, leurs auteurs et leurs likes (SQL pur)
 	var posts []structs.Post
-	if err := db.DB.
-		Preload("User").
-		Preload("Comments").
-		Preload("Comments.User"). // <-- Correct ici si struct Comment a une relation User
-		Find(&posts).Error; err != nil {
+	rows, err := db.DB.Query(`
+		SELECT posts.postID, posts.categoryID, posts.postKey, posts.imageID, posts.postComment, posts.postLike, posts.createdAt, 
+		       users.username
+		FROM posts
+		JOIN users ON posts.userID = users.userID
+	`)
+	if err != nil {
 		handleError(w, err, "Erreur lors de la récupération des posts")
 		return
 	}
+	defer rows.Close()
 
+	for rows.Next() {
+		var post structs.Post
+		var username string // Variable temporaire pour stocker le nom d'utilisateur
+		// Récupérer toutes les colonnes et inclure le nom d'utilisateur
+		if err := rows.Scan(&post.PostID, &post.CategoryID, &post.PostKey, &post.ImageID, &post.PostComment, &post.PostLike, &post.PostCreatedAt, &username); err != nil {
+			handleError(w, err, "Erreur lors de la récupération des données de post")
+			return
+		}
+		// Associer le nom d'utilisateur récupéré à un champ d'un autre objet, si nécessaire
+		post.UserUsername = username // Pas besoin de l'ajouter à la structure, juste l'utiliser localement
+		posts = append(posts, post)
+	}
 
-	// Récupération des catégories
+	// Récupérer les catégories (SQL pur)
 	var categories []structs.Category
-	if err := db.DB.Find(&categories).Error; err != nil {
+	rows, err = db.DB.Query("SELECT categoryID, categoryName FROM categories")
+	if err != nil {
 		handleError(w, err, "Erreur lors de la récupération des catégories")
 		return
 	}
+	defer rows.Close()
 
-	// Récupérer l'utilisateur connecté si authentifié
-	var user structs.User
-	if isAuthenticated {
-		if err := db.DB.First(&user, userID).Error; err != nil {
-			handleError(w, err, "Erreur lors de la récupération de l'utilisateur")
+	for rows.Next() {
+		var category structs.Category
+		if err := rows.Scan(&category.CategoryID, &category.CategoryName); err != nil {
+			handleError(w, err, "Erreur lors de la récupération des catégories")
 			return
 		}
+		categories = append(categories, category)
 	}
 
-	// Récupération des autres utilisateurs (si vraiment nécessaire)
-	var users []structs.User
-	if err := db.DB.Find(&users).Error; err != nil {
-		handleError(w, err, "Erreur lors de la récupération des utilisateurs")
-		return
+	// Récupérer l'utilisateur connecté si authentifié (SQL pur)
+	var user structs.User
+	if isAuthenticated {
+		row := db.DB.QueryRow("SELECT userID, username FROM users WHERE userID = $1", userID)
+		if err := row.Scan(&user.UserID, &user.UserUsername); err != nil {
+			if err == sql.ErrNoRows {
+				handleError(w, err, "Utilisateur non trouvé")
+			} else {
+				handleError(w, err, "Erreur lors de la récupération de l'utilisateur")
+			}
+			return
+		}
 	}
 
 	// Ajouter le champ ActivePage ici pour indiquer la page active
@@ -59,23 +84,17 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 		IsAuthenticated bool
 		Posts           []structs.Post
 		Categories      []structs.Category
-		Users           []structs.User
 		User            structs.User
-		ActivePage      string  // <-- Ajouté ici
+		ActivePage      string
 	}{
 		IsAuthenticated: isAuthenticated,
 		Posts:           posts,
 		Categories:      categories,
-		Users:           users,
 		User:            user,
-		ActivePage:      "home",  // <-- Page active définie ici
+		ActivePage:      "home",
 	})
 }
 
-
-
-
-// Catégorie Hack
 func CategoryHack(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("hack")
 	if err != nil {
@@ -85,7 +104,6 @@ func CategoryHack(w http.ResponseWriter, r *http.Request) {
 	services.RenderTemplate(w, "guest/catégorie_hack.html", posts)
 }
 
-// Catégorie Programmation
 func CategoryProg(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("prog")
 	if err != nil {
@@ -95,7 +113,6 @@ func CategoryProg(w http.ResponseWriter, r *http.Request) {
 	services.RenderTemplate(w, "guest/catégorie_prog.html", posts)
 }
 
-// Catégorie News
 func CategoryNews(w http.ResponseWriter, r *http.Request) {
 	posts, err := services.GetPostsByCategory("news")
 	if err != nil {
@@ -104,8 +121,6 @@ func CategoryNews(w http.ResponseWriter, r *http.Request) {
 	}
 	services.RenderTemplate(w, "guest/catégorie_news.html", posts)
 }
-
-// Recherche de posts par pseudo
 func SearchPseudo(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("query")
 	posts, err := services.SearchPosts(searchQuery)
@@ -113,11 +128,8 @@ func SearchPseudo(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err, "Erreur lors de la recherche de posts")
 		return
 	}
-
 	services.RenderTemplate(w, "guest/search.html", posts)
 }
-
-// Page "À propos" du forum
 func AboutForum(w http.ResponseWriter, r *http.Request) {
 	services.RenderTemplate(w, "guest/about.html", nil)
 }

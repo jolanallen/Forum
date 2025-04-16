@@ -7,17 +7,29 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"database/sql"
 )
 
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
+		// Récupérer les catégories via une requête SQL brute
 		var categories []structs.Category
-		if err := db.DB.Find(&categories).Error; err != nil {
+		rows, err := db.DB.Query("SELECT categoryID, categoryName FROM categories")
+		if err != nil {
 			http.Error(w, "Erreur lors de la récupération des catégories", http.StatusInternalServerError)
 			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var category structs.Category
+			if err := rows.Scan(&category.CategoryID, &category.CategoryName); err != nil {
+				http.Error(w, "Erreur lors du traitement des catégories", http.StatusInternalServerError)
+				return
+			}
+			categories = append(categories, category)
 		}
 
 		services.RenderTemplate(w, "BoyWithUke_Prairies", struct {
@@ -45,15 +57,9 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the post
-	post := structs.Post{
-		PostKey:     postKey,
-		PostComment: content,
-		UserID:      userID,
-		ImageID:     imageID, // Assure que l'imageID est valide
-		CategoryID:  categoryID,
-	}
-
-	if err := db.DB.Create(&post).Error; err != nil {
+	query := "INSERT INTO posts (postKey, postComment, userID, imageID, categoryID) VALUES (?, ?, ?, ?, ?)"
+	_, err = db.DB.Exec(query, postKey, content, userID, imageID, categoryID)
+	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de la création du post : %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -85,12 +91,18 @@ func ToggleLikeComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hasLiked {
-		if err := services.RemoveLikeFromComment(userID, commentID, &comment); err != nil {
+		// Retirer le like
+		query := "DELETE FROM comment_likes WHERE userID = ? AND commentID = ?"
+		_, err := db.DB.Exec(query, userID, commentID)
+		if err != nil {
 			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		if err := services.AddLikeToComment(userID, commentID, &comment); err != nil {
+		// Ajouter un like
+		query := "INSERT INTO comment_likes (userID, commentID) VALUES (?, ?)"
+		_, err := db.DB.Exec(query, userID, commentID)
+		if err != nil {
 			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
 			return
 		}
@@ -123,12 +135,18 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hasLiked {
-		if err := services.RemoveLikeFromPost(userID, postID, &post); err != nil {
+		// Retirer le like
+		query := "DELETE FROM post_likes WHERE userID = ? AND postID = ?"
+		_, err := db.DB.Exec(query, userID, postID)
+		if err != nil {
 			http.Error(w, "Erreur lors du retrait du like", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		if err := services.AddLikeToPost(userID, postID, &post); err != nil {
+		// Ajouter un like
+		query := "INSERT INTO post_likes (userID, postID) VALUES (?, ?)"
+		_, err := db.DB.Exec(query, userID, postID)
+		if err != nil {
 			http.Error(w, "Erreur lors de l'ajout du like", http.StatusInternalServerError)
 			return
 		}
@@ -136,14 +154,16 @@ func ToggleLikePost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/forum", http.StatusSeeOther)
 }
+
 func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(uint64)
 	vars := mux.Vars(r)
-	// Si nécessaire, tu peux récupérer l'id aussi de cette manière
-	_ = vars["id"] // L'id dans l'URL est utilisé ici pour la vérification si nécessaire
+	_ = vars["id"]
 
 	if r.Method == http.MethodGet {
-		user, err := services.GetUserByID(userID)
+		query := "SELECT userID, userUsername, userEmail, userProfilePicture FROM users WHERE userID = ?"
+		var user structs.User
+		err := db.DB.QueryRow(query, userID).Scan(&user.UserID, &user.UserUsername, &user.UserEmail, &user.UserProfilePicture)
 		if err != nil {
 			http.Error(w, "Erreur lors de la récupération des informations du profil", http.StatusInternalServerError)
 			return
@@ -174,15 +194,17 @@ func UserEditProfile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if file, _, err := r.FormFile("userProfilePicture"); err == nil {
-			imageID, err := services.ValidateImage(file, nil)
+			image, err := services.ValidateImage(file, nil)
 			if err != nil {
 				http.Error(w, "Erreur de validation de l'image : "+err.Error(), http.StatusBadRequest)
 				return
 			}
-			user.UserProfilePicture = imageID.ImageID
+			user.UserProfilePicture = image.ImageID
 		}
 
-		if err := UpdateUser(user); err != nil {
+		query := "UPDATE users SET userUsername = ?, userEmail = ?, userPasswordHash = ?, userProfilePicture = ? WHERE userID = ?"
+		_, err = db.DB.Exec(query, user.UserUsername, user.UserEmail, user.UserPasswordHash, user.UserProfilePicture, user.UserID)
+		if err != nil {
 			http.Error(w, "Erreur lors de la mise à jour du profil", http.StatusInternalServerError)
 			return
 		}
@@ -203,6 +225,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
 	userIDStr := r.URL.Path[len("/user/"):]
+
 	userID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID d'utilisateur invalide", http.StatusBadRequest)
@@ -215,18 +238,4 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	services.RenderTemplate(w, "BoyWithUke_Prairies", user)
-}
-
-func UpdateUser(user *structs.User) error {
-	if err := db.DB.Save(user).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func CreateUser(user *structs.User) error {
-	if err := db.DB.Create(user).Error; err != nil {
-		return err
-	}
-	return nil
 }
