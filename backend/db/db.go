@@ -3,20 +3,23 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var DB *sql.DB
 
 func DBconnect() {
 	var err error
-	dsn := "root:root@tcp(localhost:3306)/forum?charset=utf8mb4&parseTime=True&loc=Local"
+
+	// Mets ici l'adresse IP de ton conteneur MySQL
+	dsn := "root:root@tcp(172.30.0.2:3306)/forum?charset=utf8mb4&parseTime=True&loc=Local"
 
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
 		panic(fmt.Sprintf("Erreur ouverture connexion: %v", err))
 	}
 
-	// Vérifie la connexion
 	err = DB.Ping()
 	if err != nil {
 		panic(fmt.Sprintf("Impossible de ping la DB: %v", err))
