@@ -130,7 +130,7 @@ CREATE TABLE `comments` (
     `postID` BIGINT UNSIGNED NOT NULL,
     `status` ENUM('approuvé', 'en attente', 'rejeté') DEFAULT 'en attente',
     `visible` BOOLEAN DEFAULT TRUE,
-    `commentLike` BIGINT DEFAULT 0
+    `commentLike` BIGINT DEFAULT 0,
     PRIMARY KEY (`commentID`),
     FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
     FOREIGN KEY (`postID`) REFERENCES `posts` (`postID`) ON DELETE CASCADE
