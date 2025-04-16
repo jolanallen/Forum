@@ -45,7 +45,7 @@ CREATE TABLE `users` (
     `userEmail` VARCHAR(255) NOT NULL,
     `userPasswordHash` VARCHAR(255) NOT NULL,
     `userProfilePicture` BIGINT UNSIGNED NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`userID`),
     UNIQUE (`userUsername`),
     UNIQUE (`userEmail`),
@@ -65,7 +65,7 @@ CREATE TABLE `admins` (
 -- Créer la table `guests`
 CREATE TABLE `guests` (
     `guestID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `last_visited_at` DATETIME DEFAULT NULL,
     PRIMARY KEY (`guestID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -78,7 +78,7 @@ CREATE TABLE `posts` (
     `imageID` BIGINT UNSIGNED,
     `postComment` LONGTEXT,
     `postLike` BIGINT DEFAULT 0,
-    `created_at` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NULL,
     `userID` BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (`postID`),
     CONSTRAINT `fk_posts_image` FOREIGN KEY (`imageID`) REFERENCES `images` (`imageID`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -92,8 +92,8 @@ CREATE TABLE `sessionsUsers` (
     `sessionID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `userID` BIGINT UNSIGNED NOT NULL,
     `sessionToken` VARCHAR(191) NOT NULL UNIQUE,
-    `expires_at` DATETIME NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `expiresAt` DATETIME NOT NULL,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`sessionID`),
     FOREIGN KEY (`userID`) REFERENCES `users` (`userID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -103,8 +103,8 @@ CREATE TABLE `sessionsAdmins` (
     `sessionID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `adminID` BIGINT UNSIGNED NOT NULL,
     `sessionToken` VARCHAR(191) NOT NULL UNIQUE,
-    `expires_at` DATETIME NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `expiresAt` DATETIME NOT NULL,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`sessionID`),
     FOREIGN KEY (`adminID`) REFERENCES `admins` (`adminID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -114,8 +114,8 @@ CREATE TABLE `sessionsGuests` (
     `sessionID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `guestID` BIGINT UNSIGNED NOT NULL,
     `sessionToken` VARCHAR(191) NOT NULL UNIQUE,
-    `expires_at` DATETIME NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `expiresAt` DATETIME NOT NULL,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`sessionID`),
     FOREIGN KEY (`guestID`) REFERENCES `guests` (`guestID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -125,7 +125,7 @@ CREATE TABLE `sessionsGuests` (
 CREATE TABLE `comments` (
     `commentID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `userID` BIGINT UNSIGNED NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `content` TEXT,
     `postID` BIGINT UNSIGNED NOT NULL,
     `status` ENUM('approuvé', 'en attente', 'rejeté') DEFAULT 'en attente',
@@ -191,7 +191,7 @@ INSERT INTO images (url, filename) VALUES
 
 -- Utilisateurs (avec imageID corrects = 1, 2)
 INSERT INTO users (userUsername, userEmail, userPasswordHash, userProfilePicture) VALUES
-   ('john_doe', 'john@example.com', 'hashed_password_1', 1),
+   ('john_doe', 'john@example.com', '$2a$10$f2GTlyF/9n.kAqYjRWH2GeQ9Iw62SxAd29IH6OaXhxLAbMM/FxYyO', 1),
    ('jane_doe', 'jane@example.com', 'hashed_password_2', 2);
 
 -- Catégories
@@ -208,17 +208,17 @@ INSERT INTO admins (adminUsername, adminEmail, adminPasswordHash) VALUES
 INSERT INTO guests () VALUES (), ();
 
 -- Sessions Users (userID = 1 et 2)
-INSERT INTO sessionsUsers (userID, sessionToken, expires_at) VALUES
+INSERT INTO sessionsUsers (userID, sessionToken, expiresAt) VALUES
    (1, 'token1234', NOW() + INTERVAL 1 DAY),
    (2, 'token4567', NOW() + INTERVAL 1 DAY);
 
 -- Sessions Admins (adminID = 1 et 2)
-INSERT INTO sessionsAdmins (adminID, sessionToken, expires_at) VALUES
+INSERT INTO sessionsAdmins (adminID, sessionToken, expiresAt) VALUES
    (1, 'admintoken1', NOW() + INTERVAL 1 DAY),
    (2, 'admintoken2', NOW() + INTERVAL 1 DAY);
 
 -- Sessions Guests (guestID = 1 et 2)
-INSERT INTO sessionsGuests (guestID, sessionToken, expires_at) VALUES
+INSERT INTO sessionsGuests (guestID, sessionToken, expiresAt) VALUES
    (1, 'guesttoken1', NOW() + INTERVAL 1 DAY),
    (2, 'guesttoken2', NOW() + INTERVAL 1 DAY);
 

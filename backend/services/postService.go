@@ -14,7 +14,7 @@ import (
 )
 
 func ValidateImage(file multipart.File, header *multipart.FileHeader) (*structs.Image, error) {
-	const maxSize = 20 << 20
+	const maxSize = 20 << 20 // 20MB
 
 	if header.Size > maxSize {
 		return nil, fmt.Errorf("Image trop lourde (max 20MB)")
@@ -56,20 +56,28 @@ func ParseFormValues(r *http.Request) (string, uint64, error) {
 }
 
 func HandleImageUpload(r *http.Request) (uint64, error) {
-    file, header, err := r.FormFile("image")
-    if err != nil {
-        return 0, fmt.Errorf("failed to retrieve file: %v", err)
-    }
-    defer file.Close()
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		return 0, fmt.Errorf("Erreur lors de la récupération du fichier: %v", err)
+	}
+	defer file.Close()
 
-    image, err := ValidateImage(file, header)
-    if err != nil {
-        return 0, fmt.Errorf("invalid image: %v", err)
-    }
+	image, err := ValidateImage(file, header)
+	if err != nil {
+		return 0, fmt.Errorf("Image invalide: %v", err)
+	}
 
-    if err := db.DB.Create(image).Error; err != nil {
-        return 0, fmt.Errorf("database error during image upload: %v", err)
-    }
+	// Insertion SQL manuelle (sans GORM)
+	query := `INSERT INTO images (filename, data, url) VALUES (?, ?, ?)`
+	result, err := db.DB.Exec(query, image.Filename, image.Data, image.URL)
+	if err != nil {
+		return 0, fmt.Errorf("Erreur base de données: %v", err)
+	}
 
-    return image.ImageID, nil
+	imageID, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("Erreur récupération ID image: %v", err)
+	}
+
+	return uint64(imageID), nil
 }

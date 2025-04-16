@@ -2,73 +2,87 @@ package services
 
 import (
 	"Forum/backend/db"
-	"Forum/backend/structs"
-
-	"gorm.io/gorm"
+	"errors"
 )
 
 func HasUserLikedPost(userID, postID uint64) (bool, error) {
-	var like structs.PostLike
-	err := db.DB.Where("userID = ? AND postID = ?", userID, postID).First(&like).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
+	var count int
+	query := `SELECT COUNT(*) FROM post_likes WHERE userID = ? AND postID = ?`
+	err := db.DB.QueryRow(query, userID, postID).Scan(&count)
+	if err != nil {
+		return false, err
 	}
-	return err == nil, err
+	return count > 0, nil
 }
 
-
-func AddLikeToPost(userID, postID uint64, post *structs.Post) error {
-	newLike := structs.PostLike{
-		UserID: userID,
-		PostID: postID,
-	}
-	if err := db.DB.Create(&newLike).Error; err != nil {
+func AddLikeToPost(userID, postID uint64) error {
+	insert := `INSERT INTO post_likes (userID, postID) VALUES (?, ?)`
+	_, err := db.DB.Exec(insert, userID, postID)
+	if err != nil {
 		return err
 	}
-	post.PostLike++
-	return db.DB.Save(post).Error
+
+	update := `UPDATE posts SET postLike = postLike + 1 WHERE postID = ?`
+	_, err = db.DB.Exec(update, postID)
+	return err
 }
 
-
-func RemoveLikeFromPost(userID, postID uint64, post *structs.Post) error {
-	if err := db.DB.Where("userID = ? AND postID = ?", userID, postID).Delete(&structs.PostLike{}).Error; err != nil {
+func RemoveLikeFromPost(userID, postID uint64) error {
+	delete := `DELETE FROM post_likes WHERE userID = ? AND postID = ?`
+	res, err := db.DB.Exec(delete, userID, postID)
+	if err != nil {
 		return err
 	}
-	if post.PostLike > 0 {
-		post.PostLike--
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
 	}
-	return db.DB.Save(post).Error
-}
+	if rowsAffected == 0 {
+		return errors.New("like non trouvé")
+	}
 
+	update := `UPDATE posts SET postLike = postLike - 1 WHERE postID = ? AND postLike > 0`
+	_, err = db.DB.Exec(update, postID)
+	return err
+}
 
 func HasUserLikedComment(userID, commentID uint64) (bool, error) {
-	var like structs.CommentLike
-	err := db.DB.Where("userID = ? AND commentID = ?", userID, commentID).First(&like).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
+	var count int
+	query := `SELECT COUNT(*) FROM comment_likes WHERE userID = ? AND commentID = ?`
+	err := db.DB.QueryRow(query, userID, commentID).Scan(&count)
+	if err != nil {
+		return false, err
 	}
-	return err == nil, err
+	return count > 0, nil
 }
 
-func AddLikeToComment(userID, commentID uint64, comment *structs.Comment) error {
-	newLike := structs.CommentLike{
-		UserID:    userID,
-		CommentID: commentID,
-	}
-	if err := db.DB.Create(&newLike).Error; err != nil {
+func AddLikeToComment(userID, commentID uint64) error {
+	insert := `INSERT INTO comment_likes (userID, commentID) VALUES (?, ?)`
+	_, err := db.DB.Exec(insert, userID, commentID)
+	if err != nil {
 		return err
 	}
-	comment.CommentLike++
-	return db.DB.Save(comment).Error
+
+	update := `UPDATE comments SET commentLike = commentLike + 1 WHERE commentID = ?`
+	_, err = db.DB.Exec(update, commentID)
+	return err
 }
 
-
-func RemoveLikeFromComment(userID, commentID uint64, comment *structs.Comment) error {
-	if err := db.DB.Where("userID = ? AND commentID = ?", userID, commentID).Delete(&structs.CommentLike{}).Error; err != nil {
+func RemoveLikeFromComment(userID, commentID uint64) error {
+	delete := `DELETE FROM comment_likes WHERE userID = ? AND commentID = ?`
+	res, err := db.DB.Exec(delete, userID, commentID)
+	if err != nil {
 		return err
 	}
-	if comment.CommentLike > 0 {
-		comment.CommentLike--
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
 	}
-	return db.DB.Save(comment).Error
+	if rowsAffected == 0 {
+		return errors.New("like non trouvé")
+	}
+
+	update := `UPDATE comments SET commentLike = commentLike - 1 WHERE commentID = ? AND commentLike > 0`
+	_, err = db.DB.Exec(update, commentID)
+	return err
 }

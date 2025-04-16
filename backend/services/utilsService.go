@@ -45,7 +45,6 @@ func ExtractIDFromURL(path string) (uint64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("ID invalide: %v", err)
 	}
-
 	return id, nil
 }
 
@@ -58,28 +57,26 @@ func GenerateToken() string {
 	return hex.EncodeToString(b)
 }
 
-func CreateUserSession(UserID uint64) (string, error) {
+func CreateUserSession(userID uint64) (string, error) {
 	sessionToken := GenerateToken()
 	expiration := time.Now().Add(24 * time.Hour)
 
-	session := structs.SessionUser{
-		UserID:       UserID,
-		SessionToken: sessionToken,
-		ExpiresAt:    expiration,
-	}
-
-	result := db.DB.Create(&session)
-	if result.Error != nil {
-		return "", result.Error
+	query := `
+		INSERT INTO sessionsUsers (userID, sessionToken, expiresAt, createdAt)
+		VALUES (?, ?, ?, ?)
+	`
+	_, err := db.DB.Exec(query, userID, sessionToken, expiration, time.Now())
+	if err != nil {
+		return "", err
 	}
 
 	return sessionToken, nil
 }
 
 func CheckIfEmailExists(email string) (*structs.User, error) {
+	fmt.Println(email)
 	user, err := GetUserByEmail(email)
 	fmt.Println(user)
-	fmt.Println(err)
 	if err != nil || user == nil {
 		return nil, fmt.Errorf("Utilisateur inconnu")
 	}
@@ -90,11 +87,9 @@ func CheckRegistrationForm(username, email, password, confirmPassword string) er
 	if username == "" || email == "" || password == "" || confirmPassword == "" {
 		return fmt.Errorf("Tous les champs doivent être remplis")
 	}
-
 	if password != confirmPassword {
 		return fmt.Errorf("Les mots de passe ne correspondent pas")
 	}
-
 	return nil
 }
 

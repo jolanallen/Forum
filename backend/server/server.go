@@ -19,8 +19,6 @@ func Server() {
 		log.Fatal("❌ Les variables d'environnement CERT_PATH ou KEY_PATH ne sont pas définies.")
 	}
 
-	
-
 	InitRoutes()
 	db.DBconnect()
 	fmt.Println("https://localhost:443/forum/")

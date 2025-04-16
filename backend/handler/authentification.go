@@ -8,13 +8,14 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+	"database/sql"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	oauth2api "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
 )
 
+// Configuration OAuth2 pour Google
 var oauth2Config = oauth2.Config{
 	ClientID:     "YOUR_GOOGLE_CLIENT_ID",
 	ClientSecret: "YOUR_GOOGLE_CLIENT_SECRET",
@@ -30,24 +31,34 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		email := r.FormValue("userEmail")
 		password := r.FormValue("userPassword")
+		fmt.Println(email)
 
-		user, err := services.CheckIfEmailExists(email)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+		// Vérifier si l'email existe dans la base de données
+		var user structs.User
+		row := db.DB.QueryRow("SELECT id, user_password_hash FROM users WHERE user_email = $1", email)
+		if err := row.Scan(&user.UserID, &user.UserPasswordHash); err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Email non trouvé", http.StatusUnauthorized)
+			} else {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+			}
 			return
 		}
 
+		// Vérifier le mot de passe
 		if !services.CheckPasswordHash(password, user.UserPasswordHash) {
 			http.Error(w, "Mot de passe invalide", http.StatusUnauthorized)
 			return
 		}
 
+		// Créer une session utilisateur
 		sessionToken, err := services.CreateUserSession(user.UserID)
 		if err != nil {
 			http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
 			return
 		}
 
+		// Stocker le token de session dans un cookie
 		http.SetCookie(w, &http.Cookie{
 			Name:     "sessionToken",
 			Value:    sessionToken,
@@ -57,7 +68,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 		})
 
-		http.Redirect(w, r, "/forum", http.StatusSeeOther)
+		// Rediriger vers la page d'accueil
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	} else {
 		services.RenderTemplate(w, "auth/login.html", nil)
 	}
@@ -65,7 +77,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-
 		services.RenderTemplate(w, "auth/register.html", nil)
 		return
 	}
@@ -76,6 +87,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("userPassword")
 		confirmPassword := r.FormValue("confirm_password")
 
+		// Vérification des champs du formulaire
 		err := services.CheckRegistrationForm(username, email, password, confirmPassword)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -86,22 +98,30 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		existingUser, err := services.GetUserByEmail(email)
-		if err != nil {
-			http.Error(w, "Erreur lors de la recherche de l'email", http.StatusInternalServerError)
-			return
+		// Vérifier si l'email est déjà pris
+		var existingUser struct {
+			UserEmail string
 		}
-		if existingUser != nil {
+		row := db.DB.QueryRow("SELECT user_email FROM users WHERE user_email = $1", email)
+		if err := row.Scan(&existingUser.UserEmail); err != nil {
+			if err != sql.ErrNoRows {
+				http.Error(w, "Erreur lors de la vérification de l'email", http.StatusInternalServerError)
+				return
+			}
+		} else {
 			http.Error(w, "Un compte avec cet email existe déjà", http.StatusBadRequest)
 			return
 		}
 
+		// Hachage du mot de passe
 		hashedPassword, err := services.HashPassword(password)
 		if err != nil {
 			log.Println("Erreur lors du hachage du mot de passe:", err)
 			http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 			return
 		}
+
+		// Gestion de l'image de profil
 		var userProfileImageID uint64
 		userProfileImageID, err = services.HandleImageUpload(r)
 		if err != nil {
@@ -111,25 +131,27 @@ func Register(w http.ResponseWriter, r *http.Request) {
 				URL:      "/images/default.png",
 			}
 
-			if err := db.DB.Create(defaultImage).Error; err != nil {
+			// Insérer l'image par défaut
+			if err := db.DB.QueryRow(`
+				INSERT INTO images (filename, url) VALUES ($1, $2) RETURNING image_id`,
+				defaultImage.Filename, defaultImage.URL).Scan(&userProfileImageID); err != nil {
 				log.Println("Erreur lors de l'ajout de l'image par défaut:", err)
 				http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 				return
 			}
-			userProfileImageID = defaultImage.ImageID
-		}
-		newUser := structs.User{
-			UserUsername:       username,
-			UserEmail:          email,
-			UserPasswordHash:   hashedPassword,
-			UserProfilePicture: userProfileImageID,
 		}
 
-		if err := CreateUser(&newUser); err != nil {
+		// Création d'un nouvel utilisateur
+		_, err = db.DB.Exec(`
+			INSERT INTO users (user_username, user_email, user_password_hash, user_profile_picture)
+			VALUES ($1, $2, $3, $4)`,
+			username, email, hashedPassword, userProfileImageID)
+		if err != nil {
 			log.Println("Erreur lors de la création de l'utilisateur:", err)
 			http.Error(w, "Erreur lors de l'inscription", http.StatusInternalServerError)
 			return
 		}
+
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 }
@@ -146,46 +168,58 @@ func GoogleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Échanger le code contre un token OAuth
 	token, err := oauth2Config.Exchange(r.Context(), code)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de l'échange du code : %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// Créer un client OAuth avec le token
 	client := oauth2Config.Client(r.Context(), token)
-
 	oauth2Service, err := oauth2api.NewService(r.Context(), option.WithHTTPClient(client))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de la création du service OAuth2 : %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// Récupérer les informations utilisateur
 	userInfo, err := oauth2Service.Userinfo.Get().Do()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erreur lors de la récupération des infos utilisateur : %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// Vérifier si l'utilisateur existe déjà
 	var user structs.User
-	if err := db.DB.Where("userEmail = ?", userInfo.Email).First(&user).Error; err != nil {
-		newUser := structs.User{
-			UserUsername:     userInfo.Name,
-			UserEmail:        userInfo.Email,
-			UserPasswordHash: "",
-		}
-		if err := db.DB.Create(&newUser).Error; err != nil {
+	row := db.DB.QueryRow("SELECT id, user_username FROM users WHERE user_email = $1", userInfo.Email)
+	if err := row.Scan(&user.UserID, &user.UserUsername); err != nil {
+		// Si l'utilisateur n'existe pas, créer un nouvel utilisateur
+		_, err := db.DB.Exec(`
+			INSERT INTO users (user_username, user_email) 
+			VALUES ($1, $2)`,
+			userInfo.Name, userInfo.Email)
+		if err != nil {
 			http.Error(w, "Erreur lors de la création de l'utilisateur", http.StatusInternalServerError)
 			return
 		}
-		user = newUser
+
+		// Récupérer l'utilisateur nouvellement créé
+		row = db.DB.QueryRow("SELECT id FROM users WHERE user_email = $1", userInfo.Email)
+		if err := row.Scan(&user.UserID); err != nil {
+			http.Error(w, "Erreur lors de la récupération de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
 	}
 
+	// Créer une session pour l'utilisateur
 	sessionToken, err := services.CreateUserSession(user.UserID)
 	if err != nil {
 		http.Error(w, "Erreur lors de la création de la session", http.StatusInternalServerError)
 		return
 	}
 
+	// Stocker le token de session dans un cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "sessionToken",
 		Value:    sessionToken,
