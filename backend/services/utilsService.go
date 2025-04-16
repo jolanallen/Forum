@@ -78,6 +78,8 @@ func CreateUserSession(UserID uint64) (string, error) {
 
 func CheckIfEmailExists(email string) (*structs.User, error) {
 	user, err := GetUserByEmail(email)
+	fmt.Println(user)
+	fmt.Println(err)
 	if err != nil || user == nil {
 		return nil, fmt.Errorf("Utilisateur inconnu")
 	}

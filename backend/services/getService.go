@@ -19,10 +19,24 @@ func GetUserIDFromSession(r *http.Request) uint64 {
 	if err != nil {
 		return 0
 	}
+
 	var userID uint64
-	fmt.Sscanf(cookie.Value, "%d", &userID)
+	sessionType := cookie.Value[:5]
+
+	switch sessionType {
+	case "user_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	case "admin_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	case "guest_":
+		fmt.Sscanf(cookie.Value[5:], "%d", &userID)
+	default:
+		return 0
+	}
+
 	return userID
 }
+
 
 func GetUserByID(userID uint64) (*structs.User, error) {
 	var user structs.User
@@ -31,25 +45,25 @@ func GetUserByID(userID uint64) (*structs.User, error) {
 	}
 	return &user, nil
 }
-//donne la structure de tout les poste en fonction de la categorie
+
+// donne la structure de tout les poste en fonction de la categorie
 func GetPostsByCategory(category string) ([]structs.Post, error) {
 	var posts []structs.Post
 
-	subQuery := db.DB.                        //// sous-requêtes qui permet de récupérer d'abord L'Id de la catégorie 
-		Table("categories").
-		Select("categoriesID").
-		Where("LOWER(categoriesName) = LOWER(?)", category)
+	subQuery := db.DB. //// sous-requêtes qui permet de récupérer d'abord L'Id de la catégorie
+				Table("categories").
+				Select("categoryID").
+				Where("LOWER(categoryName) = LOWER(?)", category)
 
-	err := db.DB.                            /// récupére tout les post de la catégoroie correspondant a l'ID récupérer
-		Where("categoriesID = (?)", subQuery).
-		Find(&posts).Error
+	err := db.DB. /// récupére tout les post de la catégoroie correspondant a l'ID récupérer
+			Where("categoryID = (?)", subQuery).
+			Find(&posts).Error
 
 	if err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
-
 
 func GetCommentByID(commentID uint64) (structs.Comment, error) {
 	var comment structs.Comment
@@ -58,11 +72,16 @@ func GetCommentByID(commentID uint64) (structs.Comment, error) {
 }
 
 func GetUserByEmail(email string) (*structs.User, error) {
+	fmt.Println(email)
 	var user structs.User
-	result := db.DB.Where("userEmail = ?", email).First(&user)
+	fmt.Println(user)
+	result := db.DB.Model(&structs.User{}).Where("`userEmail` = ?", email).First(&user)
+
+	fmt.Println(result)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+	fmt.Println("blablaba")
 	return &user, nil
 }
 

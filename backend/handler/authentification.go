@@ -57,7 +57,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 		})
 
-		http.Redirect(w, r, "/home", http.StatusSeeOther)
+		http.Redirect(w, r, "/forum", http.StatusSeeOther)
 	} else {
 		services.RenderTemplate(w, "auth/login.html", nil)
 	}
