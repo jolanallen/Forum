@@ -10,6 +10,8 @@ import (
 )
 
 func InitRoutes() {
+    fs := http.FileServer(http.Dir("./web/static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
     //////////////////////////////sous router pour guest //////////////////////////////////////////
     guestRouter := http.NewServeMux()

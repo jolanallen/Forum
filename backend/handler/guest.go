@@ -24,7 +24,7 @@ func GuestHome(w http.ResponseWriter, r *http.Request) {
 	var posts []structs.Post
 	rows, err := db.DB.Query(`
 		SELECT posts.postID, posts.categoryID, posts.postKey, posts.imageID, posts.postComment, posts.postLike, posts.createdAt, 
-		       users.username
+		       users.userUsername
 		FROM posts
 		JOIN users ON posts.userID = users.userID
 	`)
