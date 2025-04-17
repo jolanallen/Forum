@@ -9,35 +9,6 @@ import (
 	"time"
 )
 
-// GetPostByID retrieves a post by its ID.
-func GetPostByID(postID uint64) (structs.Post, error) {
-	var post structs.Post
-	// Query to fetch post details by postID
-	query := `
-		SELECT postID, userID, categoryID, postKey, imageID, postComment, postLike, createdAt 
-		FROM posts 
-		WHERE postID = ?
-	`
-	err := db.DB.QueryRow(query, postID).Scan(
-		&post.PostID,
-		&post.UserID,
-		&post.CategoryID,
-		&post.PostKey,
-		&post.ImageID,
-		&post.PostLike,
-		&post.PostCreatedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Return an empty post if no post is found
-			return post, nil
-		}
-		// Return error if any other issue occurs
-		return post, err
-	}
-	return post, nil
-}
-
 // GetUserIDFromSession retrieves the user ID from the session cookie.
 func GetUserIDFromSession(r *http.Request) uint64 {
 	// Get the session cookie
@@ -128,35 +99,6 @@ func GetPostsByCategory(category string) ([]structs.Post, error) {
 		posts = append(posts, post)
 	}
 	return posts, nil
-}
-
-// GetCommentByID retrieves a comment by its ID.
-func GetCommentByID(commentID uint64) (structs.Comment, error) {
-	var comment structs.Comment
-	// Query to fetch comment details by commentID
-	query := `
-		SELECT commentID, userID, postID, content, status, visible, createdAt 
-		FROM comments 
-		WHERE commentID = ?
-	`
-	err := db.DB.QueryRow(query, commentID).Scan(
-		&comment.CommentID,
-		&comment.UserID,
-		&comment.PostID,
-		&comment.CommentContent,
-		&comment.CommentStatus,
-		&comment.CommentVisible,
-		&comment.CommentCreatedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Return an empty comment if no comment is found
-			return comment, nil
-		}
-		// Return error if any other issue occurs
-		return comment, err
-	}
-	return comment, nil
 }
 
 // GetUserByEmail retrieves a user by their email address.
