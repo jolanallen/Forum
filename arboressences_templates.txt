@@ -1,10 +1,11 @@
 .
+├── Dockerfile
+├── README.md
 ├── arborescence.txt
 ├── arboressences_templates.txt
 ├── backend
 │   ├── db
-│   │   ├── db.go
-│   │   └── queries.go
+│   │   └── db.go
 │   ├── handler
 │   │   ├── admin.go
 │   │   ├── authentification.go
@@ -12,7 +13,6 @@
 │   │   └── user.go
 │   ├── middlewares
 │   │   ├── auth.go
-│   │   ├── cookie.go
 │   │   ├── logger.go
 │   │   └── security.go
 │   ├── server
@@ -28,45 +28,32 @@
 │   │   ├── postService.go
 │   │   ├── searchService.go
 │   │   └── utilsService.go
-│   ├── session
-│   │   ├── session.go
-│   │   └── session_store.go
-│   ├── structs
-│   │   ├── adminDashboardData.go
-│   │   ├── admin.go
-│   │   ├── category.go
-│   │   ├── comment.go
-│   │   ├── commentLike.go
-│   │   ├── Forum.go
-│   │   ├── guest.go
-│   │   ├── image.go
-│   │   ├── post.go
-│   │   ├── postLike.go
-│   │   ├── sessionAdmin.go
-│   │   ├── sessionGuest.go
-│   │   ├── sessionUser.go
-│   │   └── user.go
-│   └── UnitTest
-│       ├── Unit_Test_Auth.go
-│       ├── Unit_Test_DB_Queries.go
-│       └── Unit_Test_Logic.go
+│   └── structs
+│       ├── Forum.go
+│       ├── admin.go
+│       ├── adminDashboardData.go
+│       ├── category.go
+│       ├── comment.go
+│       ├── commentLike.go
+│       ├── guest.go
+│       ├── image.go
+│       ├── post.go
+│       ├── postLike.go
+│       ├── sessionAdmin.go
+│       ├── sessionGuest.go
+│       ├── sessionUser.go
+│       └── user.go
 ├── databases
 │   ├── Dockerfile
 │   ├── forum.sql
 │   └── image.png
 ├── docker-compose.yaml
-├── Dockerfile
 ├── forum-app
-├── forum image sql
-│   ├── Capture d'écran 2025-03-10 104158.png
-│   ├── Capture d'écran 2025-03-10 232426.png
-│   └── creation d'un user pour exporter.png
 ├── go.mod
 ├── go.sum
 ├── launcher.sh
 ├── main
 │   └── main.go
-├── README.md
 ├── route management.jpg
 └── web
     ├── static
@@ -85,9 +72,7 @@
     │       └── waitingRoom.js
     └── templates
         ├── admin
-        │   ├── dashboard.html
-        │   ├── manage_post.html
-        │   └── manage_user.html
+        │   └── dashboard.html
         ├── auth
         │   ├── login.html
         │   ├── logout.html
@@ -98,21 +83,11 @@
         │   └── 500.html
         ├── forum
         │   ├── home.html
-        │   ├── new_post.html
-        │   ├── sujet.html
-        │   └── waitingRoom.html
+        │   └── new_post.html
         ├── guest
-        │   ├── catégorie_hack.html
-        │   ├── catégorie_news.html
-        │   └── catégorie_prog.html
-        ├── include
-        │   ├── comment_card.html
-        │   ├── footer.html
-        │   ├── navbar.html
-        │   └── post_card.html
-        ├── index.html
+        │   └── categories_post.html
         └── users
             ├── profile.html
             └── profile_settings.html
 
-27 directories, 89 files
+23 directories, 65 files

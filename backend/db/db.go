@@ -17,7 +17,7 @@ func DBconnect() {
 	// Define the Data Source Name (DSN)
 	// Format: username:password@tcp(host:port)/databaseName?params
 	// Note: Replace "localhost" with your actual MySQL container IP if needed
-	dsn := "root:root@tcp(localhost:3306)/forum?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:root@tcp(172.30.0.2:3306)/forum?charset=utf8mb4&parseTime=True&loc=Local"
 
 	// Open a database connection using the MySQL driver
 	DB, err = sql.Open("mysql", dsn)
